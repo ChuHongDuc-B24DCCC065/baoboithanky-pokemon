@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập — Poké-Engine</title>
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <header class="auth-header">
+                <div class="auth-logo-badge" aria-hidden="true"></div>
+                <h1 class="auth-title">Poké-Engine</h1>
+                <p class="auth-subtitle">Huấn Luyện Viên Đăng Nhập</p>
+            </header>
+
+            <div id="auth-alert" class="auth-alert" role="alert" aria-live="polite"></div>
+
+            <form id="login-form" novalidate autocomplete="on">
+                <div class="auth-form-group">
+                    <label for="username" class="auth-label">Tên đăng nhập</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="auth-input" 
+                        placeholder="Nhập tên đăng nhập..."
+                        required 
+                        autocomplete="username"
+                        maxlength="20"
+                        spellcheck="false"
+                        autofocus
+                    >
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="password" class="auth-label">Mật khẩu</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="auth-input" 
+                        placeholder="Nhập mật khẩu..."
+                        required 
+                        autocomplete="current-password"
+                    >
+                </div>
+
+                <button type="submit" id="btn-login" class="auth-submit-btn">
+                    <span class="auth-spinner" aria-hidden="true"></span>
+                    <span class="btn-text">Vào Trò Chơi</span>
+                </button>
+            </form>
+
+            <footer class="auth-footer">
+                Chưa có tài khoản Huấn luyện viên? 
+                <a href="/register" class="auth-link">Đăng ký ngay</a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/auth/login.js"></script>
+</body>
+</html>

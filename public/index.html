@@ -1,11 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Poké-Engine</title>
     <meta charset="UTF-8">
     <link type="text/css" rel="stylesheet" href="css/style.game.css">
-    <link type="text/css" rel="stylesheet" href="css/battle.game.css">
-    <link type="text/css" rel="stylesheet" href="css/bar.game.css">
+    <!-- Tạm thời ẩn các stylesheet của hệ thống Battle và Status Bar chưa triển khai để tránh cảnh báo MIME 404 trên Console -->
+    <!-- <link type="text/css" rel="stylesheet" href="css/battle.game.css"> -->
+    <!-- <link type="text/css" rel="stylesheet" href="css/bar.game.css"> -->
     <link type="text/css" rel="stylesheet" href="css/character.game.css">
     <link type="text/css" rel="stylesheet" href="css/icon.game.css">
 </head>
@@ -33,13 +34,24 @@
                     <img alt="Carregando..." title="Carregando..." class="img_loader" src="img/loader.gif">
                 </div>
                 <div id="battle"></div>
+                <div id="trainer-hud">
+                    <div class="trainer-badge">
+                        <span class="trainer-status-dot" aria-hidden="true"></span>
+                        <span id="trainer-name">Trainer</span>
+                    </div>
+                    <button id="btn-logout" type="button" title="Đăng xuất khỏi trò chơi">Thoát</button>
+                </div>
+                <div id="dialogue-box" class="dialogue-box" style="display: none;">
+                    <div class="dialogue-frame">
+                        <p id="dialogue-text"></p>
+                        <span class="dialogue-arrow">&#x25BC;</span>
+                    </div>
+                </div>
             </div>
             <div id="cache"></div>
         </div>
     </div>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenLite.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/jquery.gsap.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/async/2.6.2/async.min.js"></script>
     <script type="text/javascript" src="js/socket.io.js"></script>
     <script type="text/javascript" src="js/engine/index.js"></script>

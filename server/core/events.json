@@ -1,3 +1,4 @@
 {
-    "PLAYER_MOVE": 1
+    "PLAYER_MOVE": 1,
+    "PLAYER_LEAVE": 2
 }

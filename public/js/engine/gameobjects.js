@@ -85,8 +85,14 @@ Character.prototype.syncWalk = [
     function () {
         this[0].setPosition(this[1]);
 
-        if (this[0].isPlayer) 
+        if (this[0].isPlayer) {
             this[0].walkInProgress = false;
+
+            // Lên lịch lưu vị trí lên Firestore sau khi bước đi hoàn chỉnh (Debounce 2s)
+            if (this[0].game && typeof this[0].game.scheduleSavePosition === "function") {
+                this[0].game.scheduleSavePosition();
+            }
+        }
 
         if (this[2] && typeof(this[2] == "function")) 
             this[2]();
@@ -131,6 +137,11 @@ Character.prototype.execCollision = function (direction) {
 
         return collision ? 0 : 1;
     };
+
+    // Kiểm tra va chạm với NPC nếu người chơi đang di chuyển (NPC-02)
+    if (this.game.getNpcAt && this.game.getNpcAt(position.x, position.y)) {
+        return 0;
+    }
 
     const 
         checkY = this.game.mapTiles[position.y],
@@ -214,4 +225,36 @@ Player.prototype.sendWalk = function (direction) {
         direction,
         uid: this.game.savedData.uid
     });
+};
+
+// NPC (Non-Player Character)
+const NPC = function (game, x, y, facing, data) {
+    Character.call(this, game, x, y, facing, data);
+    data = data || {};
+    this.id = data.id || ("npc_" + Math.random().toString(36).substr(2, 9));
+    this.name = data.name || "NPC";
+    this.dialogue = Array.isArray(data.dialogue) ? data.dialogue : (data.dialogue ? [data.dialogue] : []);
+    this.isNPC = true;
+};
+
+NPC.prototype = Object.create(Character.prototype);
+NPC.prototype.constructor = NPC;
+
+// add NPC to gameworld
+NPC.prototype.addToScene = function () {
+    this.$el = document.createElement("div");
+    this.$el.setAttribute("class", `npc ${this.character} ${this.character}_${this.position.facing}`);
+    this.$el.setAttribute("data-npc-id", this.id);
+
+    // putting position according to tile size
+    this.$el.style.left = this.position.x * this.game.tileSize + "px";
+    this.$el.style.top = this.position.y * this.game.tileSize + "px";
+
+    this.game.$world.append(this.$el);
+};
+
+// change NPC facing direction
+NPC.prototype.setFacing = function (direction) {
+    this.position.facing = direction;
+    this.$el.setAttribute("class", `npc ${this.character} ${this.character}_${direction}`);
 };

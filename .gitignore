@@ -1,2 +1,12 @@
 
 node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Firebase Service Accounts & Debug Logs
+*serviceAccount*.json
+firebase-debug.log
+firestore-debug.log

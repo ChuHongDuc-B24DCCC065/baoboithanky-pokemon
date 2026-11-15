@@ -50,6 +50,26 @@
          "name":"objects",
          "objects":[
                 {
+                 "height":16,
+                 "id":1,
+                 "name":"Guide Leaf",
+                 "properties":{
+                     "character":"leaf",
+                     "dialogue":[
+                         "Chào mừng bạn đến với thế giới Pokémon!",
+                         "Thị trấn này rất yên bình. Hãy dùng các phím WASD để dạo quanh nhé!",
+                         "Chúc bạn có một chuyến hành trình tuyệt vời!"
+                     ],
+                     "facing":"down"
+                 },
+                 "rotation":0,
+                 "type":"npc",
+                 "visible":true,
+                 "width":16,
+                 "x":48,
+                 "y":16
+                },
+                {
                  "gid":13,
                  "height":16,
                  "id":21,

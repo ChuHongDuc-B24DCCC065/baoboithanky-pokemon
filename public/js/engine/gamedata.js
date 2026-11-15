@@ -34,7 +34,8 @@ Game.prototype.mapData = {
 };
 
 Game.EVENTS = {
-    PLAYER_MOVE: 1
+    PLAYER_MOVE: 1,
+    PLAYER_LEAVE: 2
 };
 
 Game.prototype.level = {};

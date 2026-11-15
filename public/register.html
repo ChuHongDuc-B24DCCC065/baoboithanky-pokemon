@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký — Poké-Engine</title>
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container register-container">
+        <div class="auth-card">
+            <header class="auth-header">
+                <div class="auth-logo-badge" aria-hidden="true"></div>
+                <h1 class="auth-title">Poké-Engine</h1>
+                <p class="auth-subtitle">Tạo Hồ Sơ Huấn Luyện Viên Mới</p>
+            </header>
+
+            <div id="auth-alert" class="auth-alert" role="alert" aria-live="polite"></div>
+
+            <form id="register-form" novalidate autocomplete="on">
+                <div class="auth-form-group">
+                    <label for="username" class="auth-label">Tên đăng nhập</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="auth-input" 
+                        placeholder="Từ 3 đến 20 ký tự (chữ, số, _)..."
+                        required 
+                        autocomplete="username"
+                        minlength="3"
+                        maxlength="20"
+                        spellcheck="false"
+                        autofocus
+                    >
+                    <p class="auth-hint">Chỉ chứa chữ cái tiếng Anh, chữ số và dấu gạch dưới (_).</p>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="password" class="auth-label">Mật khẩu</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        class="auth-input" 
+                        placeholder="Tối thiểu 6 ký tự..."
+                        required 
+                        autocomplete="new-password"
+                        minlength="6"
+                    >
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="confirm-password" class="auth-label">Xác nhận mật khẩu</label>
+                    <input 
+                        type="password" 
+                        id="confirm-password" 
+                        name="confirmPassword" 
+                        class="auth-input" 
+                        placeholder="Nhập lại mật khẩu..."
+                        required 
+                        autocomplete="new-password"
+                        minlength="6"
+                    >
+                </div>
+
+                <div class="auth-form-group">
+                    <label class="auth-label character-select-label">Chọn nhân vật khởi đầu</label>
+                    <div class="character-grid" role="radiogroup" aria-label="Danh sách nhân vật khởi đầu">
+                        
+                        <label class="character-card selected" data-character="red">
+                            <input type="radio" name="character" value="red" checked>
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite red" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Red</span>
+                        </label>
+
+                        <label class="character-card" data-character="leaf">
+                            <input type="radio" name="character" value="leaf">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite leaf" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Leaf</span>
+                        </label>
+
+                        <label class="character-card" data-character="brendan">
+                            <input type="radio" name="character" value="brendan">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite brendan" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Brendan</span>
+                        </label>
+
+                        <label class="character-card" data-character="ethan">
+                            <input type="radio" name="character" value="ethan">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite ethan" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Ethan</span>
+                        </label>
+
+                        <label class="character-card" data-character="kris">
+                            <input type="radio" name="character" value="kris">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite kris" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Kris</span>
+                        </label>
+
+                        <label class="character-card" data-character="lucas">
+                            <input type="radio" name="character" value="lucas">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite lucas" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Lucas</span>
+                        </label>
+
+                        <label class="character-card" data-character="dawn">
+                            <input type="radio" name="character" value="dawn">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite dawn" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Dawn</span>
+                        </label>
+
+                        <label class="character-card" data-character="blue">
+                            <input type="radio" name="character" value="blue">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite blue" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Blue</span>
+                        </label>
+
+                        <label class="character-card" data-character="silver">
+                            <input type="radio" name="character" value="silver">
+                            <div class="character-preview-box">
+                                <span class="character-preview-sprite silver" aria-hidden="true"></span>
+                            </div>
+                            <span class="character-name">Silver</span>
+                        </label>
+
+                    </div>
+                    <p class="auth-hint">Nhân vật sẽ đại diện cho bạn khi di chuyển trong thế giới Pokémon.</p>
+                </div>
+
+                <button type="submit" id="btn-register" class="auth-submit-btn">
+                    <span class="auth-spinner" aria-hidden="true"></span>
+                    <span class="btn-text">Tạo Tài Khoản</span>
+                </button>
+            </form>
+
+            <footer class="auth-footer">
+                Đã có tài khoản Huấn luyện viên? 
+                <a href="/login" class="auth-link">Đăng nhập</a>
+            </footer>
+        </div>
+    </div>
+
+    <script src="js/auth/register.js"></script>
+</body>
+</html>

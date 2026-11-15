@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Mặc định từ chối 100% truy cập trực tiếp từ client SDK bên ngoài.
+    // Mọi thao tác truy xuất dữ liệu chỉ được phép qua Firebase Admin SDK trên Express Server.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
