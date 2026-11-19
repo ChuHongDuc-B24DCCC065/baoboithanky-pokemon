@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mapId": "cave_entrance",
+  "npcs": [
+    {
+      "id": "guard-cave",
+      "name": "Người canh hang",
+      "position": {
+        "x": 17,
+        "y": 14
+      },
+      "sprite": "leaf",
+      "facing": "right",
+      "collision": true,
+      "dialogue": [
+        "Phía trước là cửa hang. Bên trong rất tối.",
+        "Hãy chuẩn bị kỹ trước khi vào nhé."
+      ],
+      "questIds": []
+    }
+  ]
+}

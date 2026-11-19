@@ -24,8 +24,6 @@ Poké-Engine is a small browser game focused on exploring a tile-based map. The 
 - Socket.IO 2.3 for multiplayer communication.
 - `dotenv` for loading local environment variables.
 
-The package manifest still includes `bcryptjs`, `mongoose`, `connect-mongo`, and `express-session` for older model/session files. They are not part of the active Firebase authentication and player-data flow.
-
 ## Requirements
 
 - Node.js 22 or later.

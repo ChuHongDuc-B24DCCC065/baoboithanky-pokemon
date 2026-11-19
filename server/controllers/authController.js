@@ -17,15 +17,11 @@ const {
     extractCookie
 } = require("../middleware/csrfMiddleware");
 const { disconnectAllSocketsForUser } = require("../socket/activeSockets");
+const worldRegistryService = require("../services/worldRegistryService");
 
-// Cấu hình spawn mặc định và whitelist bản đồ hợp lệ (MAP_WHITELIST)
-const DEFAULT_SPAWN_POSITION = {
-    x: 1,
-    y: 1,
-    map: "test",
-    facing: "down"
-};
-const MAP_WHITELIST = ["test"];
+// Map IDs and the default spawn come from the shared World Registry.
+const DEFAULT_SPAWN_POSITION = worldRegistryService.getDefaultPosition();
+const MAP_WHITELIST = worldRegistryService.getMapIds();
 const VALID_FACINGS = ["up", "down", "left", "right"];
 
 /**
@@ -357,19 +353,19 @@ const savePosition = async (req, res, next) => {
 
         const { x, y, map, facing } = req.body || {};
 
-        // 1. Kiểm tra tọa độ: Tọa độ ô tile phải là số nguyên không âm trong giới hạn bản đồ
-        if (!Number.isInteger(x) || x < 0 || x > 100) {
+        // 1. Kiểm tra tọa độ tile trong collision grid của map đã đăng ký
+        if (!Number.isInteger(x) || x < 0) {
             return res.status(400).json({
                 success: false,
-                message: "Tọa độ X không hợp lệ. Phải là số nguyên từ 0 đến 100.",
+                message: "Tọa độ X không hợp lệ.",
                 code: "INVALID_COORDINATES"
             });
         }
 
-        if (!Number.isInteger(y) || y < 0 || y > 100) {
+        if (!Number.isInteger(y) || y < 0) {
             return res.status(400).json({
                 success: false,
-                message: "Tọa độ Y không hợp lệ. Phải là số nguyên từ 0 đến 100.",
+                message: "Tọa độ Y không hợp lệ.",
                 code: "INVALID_COORDINATES"
             });
         }
@@ -381,6 +377,14 @@ const savePosition = async (req, res, next) => {
                 success: false,
                 message: "Bản đồ không hợp lệ trong danh mục trò chơi.",
                 code: "INVALID_MAP"
+            });
+        }
+
+        if (!worldRegistryService.isWalkable(selectedMap, x, y)) {
+            return res.status(400).json({
+                success: false,
+                message: "Vị trí nằm ngoài bản đồ hoặc bị collision chặn.",
+                code: "INVALID_POSITION"
             });
         }
 

@@ -1,4 +1,7 @@
 {
     "PLAYER_MOVE": 1,
-    "PLAYER_LEAVE": 2
+    "PLAYER_LEAVE": 2,
+    "PLAYER_JOIN": 3,
+    "MAP_TRANSITION": 4,
+    "MAP_SYNC": 5
 }

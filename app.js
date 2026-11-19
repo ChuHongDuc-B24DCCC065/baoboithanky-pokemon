@@ -15,6 +15,7 @@ const { ensureCsrfCookie, extractCookie } = require("./server/middleware/csrfMid
 const { registerSocket, unregisterSocket } = require("./server/socket/activeSockets");
 const { verifySessionCookie } = require("./server/services/firebaseAuthService");
 const { getFirestore } = require("./server/config/firebase");
+const worldRegistryService = require("./server/services/worldRegistryService");
 const Core = require("./server/core");
 
 app.set("port", process.env.PORT || 3000);
@@ -198,6 +199,13 @@ const startServer = async () => {
                 socket.userId = decoded.uid;
                 socket.username = userData.username;
                 socket.character = userData.character || "red";
+                const savedPosition = worldRegistryService.normalizeSavedPosition(userData.position);
+                socket.mapId = savedPosition.map;
+                socket.position = {
+                    x: savedPosition.x,
+                    y: savedPosition.y,
+                    facing: savedPosition.facing
+                };
                 return next();
             } catch (firebaseErr) {
                 return next(new Error("UNAUTHORIZED"));

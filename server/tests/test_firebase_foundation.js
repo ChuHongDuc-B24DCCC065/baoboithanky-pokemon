@@ -89,7 +89,7 @@ async function runTests() {
         A6: { name: "Xử lý lỗi Offline fail-closed (Không false-positive)", status: "PENDING", details: "" },
         A7: { name: "Bảo mật Credentials & Không hardcode secrets", status: "PENDING", details: "" },
         A8: { name: "Cách ly Production & Chặn kết nối ngầm ADC", status: "PENDING", details: "" },
-        A9: { name: "Kiểm tra hành vi tính bất biến MongoDB Auth", status: "PENDING", details: "" },
+        A9: { name: "Kiểm tra hợp đồng Firebase Auth controller và middleware", status: "PENDING", details: "" },
         A10: { name: "Kiểm toán Working Tree & An toàn Git", status: "PENDING", details: "" }
     };
 
@@ -374,39 +374,11 @@ async function runTests() {
     }
 
     // -------------------------------------------------------------------------
-    // TEST SUITE A9: Behavioral Regression Check for Existing MongoDB Auth
+    // TEST SUITE A9: Firebase Auth Controller & Middleware Contract
     // -------------------------------------------------------------------------
-    console.log("[Test Suite A9]: Kiểm tra Tính Bất Biến & Hành vi Thực tế của MongoDB Auth");
+    console.log("[Test Suite A9]: Kiểm tra hợp đồng Firebase Auth controller và middleware");
     try {
-        const User = require("../models/User");
-        assert(User && User.schema, "User model phải sẵn sàng");
-
-        // 1. Kiểm tra validation schema của User
-        const validUser = new User({
-            username: "tester_valid_01",
-            password: "password123",
-            character: "red"
-        });
-        const validError = validUser.validateSync();
-        assert.strictEqual(validError, undefined, "User hợp lệ phải pass validation");
-
-        const invalidUsernameUser = new User({
-            username: "invalid@user!",
-            password: "password123",
-            character: "red"
-        });
-        const invalidUsernameErr = invalidUsernameUser.validateSync();
-        assert(invalidUsernameErr && invalidUsernameErr.errors.username, "Username chứa ký tự đặc biệt phải bị reject");
-
-        const invalidCharacterUser = new User({
-            username: "valid_name",
-            password: "password123",
-            character: "pikachu" // Không thuộc whitelist 9 sprite
-        });
-        const invalidCharErr = invalidCharacterUser.validateSync();
-        assert(invalidCharErr && invalidCharErr.errors.character, "Nhân vật ngoài whitelist phải bị reject");
-
-        // 2. Kiểm tra hành vi authController
+        // 1. Kiểm tra hành vi authController
         const authController = require("../controllers/authController");
         const mockReqInvalidRegister = {
             body: { username: "", password: "" }
@@ -416,7 +388,7 @@ async function runTests() {
         assert.strictEqual(mockRes._status, 400, "Đăng ký không có username phải trả HTTP 400");
         assert.strictEqual(mockRes._json.code, "INVALID_USERNAME", "Phải trả mã lỗi INVALID_USERNAME");
 
-        // 3. Kiểm tra hành vi authMiddleware
+        // 2. Kiểm tra hành vi authMiddleware
         const authMiddleware = require("../middleware/authMiddleware");
         const mockReqNoSession = {
             session: null,
@@ -430,8 +402,8 @@ async function runTests() {
         assert.strictEqual(mockResAuth._json.code, "UNAUTHORIZED", "Phải trả mã lỗi UNAUTHORIZED");
 
         checklist.A9.status = "PASS";
-        checklist.A9.details = "Đã kiểm chứng hành vi schema validation, controller contract và middleware 401";
-        console.log("✓ A9 PASSED: Toàn bộ nghiệp vụ MongoDB Auth hiện tại hoạt động nguyên vẹn.\n");
+        checklist.A9.details = "Đã kiểm chứng controller contract và middleware trả 401 khi thiếu session cookie";
+        console.log("✓ A9 PASSED: Firebase auth controller và middleware contract đạt assertion.\n");
     } catch (err) {
         checklist.A9.status = "FAIL";
         checklist.A9.details = err.message;

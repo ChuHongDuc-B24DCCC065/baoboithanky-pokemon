@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "mapId": "village_pine",
+  "npcs": [
+    {
+      "id": "villager-well",
+      "name": "Dân làng",
+      "position": { "x": 21, "y": 18 },
+      "sprite": "leaf",
+      "facing": "down",
+      "collision": true,
+      "dialogue": ["Giếng làng này đã có từ rất lâu rồi.", "Rừng thông phía đông nam dẫn ra đường lớn."],
+      "questIds": []
+    }
+  ]
+}

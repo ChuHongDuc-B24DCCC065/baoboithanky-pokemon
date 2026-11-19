@@ -203,6 +203,19 @@ const Player = function (game, x, y, facing, data) {
 
 Player.prototype = Object.create(Character.prototype);
 
+Player.prototype.setTilePosition = function (x, y, facing) {
+    this.position.x = x;
+    this.position.y = y;
+    this.position.facing = facing || "down";
+    this.walkInProgress = false;
+    this.stop = false;
+    if (this.$el) {
+        this.$el.style.left = x * this.game.tileSize + "px";
+        this.$el.style.top = y * this.game.tileSize + "px";
+        this.$el.setAttribute("class", this.character + " " + this.character + "_" + this.position.facing);
+    }
+};
+
 // add player to gameworld
 Player.prototype.addToScene = function () {
     this.$el = document.createElement("div");

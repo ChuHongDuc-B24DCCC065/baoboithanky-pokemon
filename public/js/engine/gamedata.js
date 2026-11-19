@@ -11,12 +11,10 @@ Game.prototype.tileTypes = {
     }
 };
 
-Game.prototype.maps = {
-    "test": {
-        "src": "img/maps/",
-        "ext": ".png"
-    }
-};
+Game.prototype.worldRegistry = null;
+
+// Populated from /res/world.json before the selected map is loaded.
+Game.prototype.maps = {};
 
 Game.prototype.stepTime = 90;
 
@@ -35,7 +33,10 @@ Game.prototype.mapData = {
 
 Game.EVENTS = {
     PLAYER_MOVE: 1,
-    PLAYER_LEAVE: 2
+    PLAYER_LEAVE: 2,
+    PLAYER_JOIN: 3,
+    MAP_TRANSITION: 4,
+    MAP_SYNC: 5
 };
 
 Game.prototype.level = {};

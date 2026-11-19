@@ -1,33 +1,158 @@
 Game.prototype.fetchMapData = function () {
     const self = this;
-    const mapName = this.savedData.map;
+    const registryUrl = "/res/world.json";
 
-    // 1. Kiểm tra tính hợp lệ của tên bản đồ trong danh mục Game.prototype.maps
-    if (!this.maps || !this.maps[mapName]) {
-        const err = new Error("Tên bản đồ '" + mapName + "' không tồn tại trong danh mục bản đồ hợp lệ (Game.prototype.maps).");
-        err.name = "InvalidMapNameError";
-        const normalized = self.normalizeGameError(err, mapName);
-        return $.Deferred().reject(normalized).promise();
-    }
+    return $.getJSON(registryUrl)
+        .then(function (registry) {
+            self.maps = self.validateWorldRegistry(registry);
+            self.worldRegistry = registry;
 
-    const mapUrl = "/res/" + mapName + ".json";
-
-    // 2. Gửi yêu cầu AJAX tải dữ liệu JSON
-    return $.getJSON(mapUrl)
-        .then(
-            function (data) {
-                self.generateMapData(data);
+            const mapId = self.savedData.map || registry.defaultMapId;
+            return self.prepareMap(mapId).then(function (prepared) {
+                if (!self.isPreparedTileWalkable(prepared, self.savedData.x, self.savedData.y)) {
+                    const err = new Error("Vị trí đã lưu không hợp lệ hoặc bị chặn; dữ liệu tài khoản chưa được thay đổi.");
+                    err.name = "MapDataError";
+                    throw self.normalizeGameError(err, mapId);
+                }
+                self.applyPreparedMap(prepared);
                 return self;
-            },
-            function (jqXHR, textStatus, errorThrown) {
-                const ajaxError = self.normalizeAjaxError(jqXHR, textStatus, errorThrown, mapUrl);
-                return $.Deferred().reject(ajaxError).promise();
-            }
-        )
+            });
+        }, function (jqXHR, textStatus, errorThrown) {
+            throw self.normalizeAjaxError(jqXHR, textStatus, errorThrown, registryUrl);
+        })
         .catch(function (err) {
-            const normalizedError = self.normalizeGameError(err, mapUrl);
+            const normalizedError = (err && err.type)
+                ? err
+                : self.normalizeGameError(err, registryUrl);
             return $.Deferred().reject(normalizedError).promise();
         });
+};
+
+Game.prototype.prepareMap = function (mapId) {
+    const self = this;
+    const registry = this.worldRegistry;
+    if (!registry || !registry.maps || !Object.prototype.hasOwnProperty.call(registry.maps, mapId)) {
+        const err = new Error("Tên bản đồ '" + mapId + "' không tồn tại trong World Registry.");
+        err.name = "InvalidMapNameError";
+        return $.Deferred().reject(self.normalizeGameError(err, mapId)).promise();
+    }
+
+    const entry = registry.maps[mapId];
+    return $.getJSON(entry.data).then(function (mapData) {
+        return $.getJSON(entry.npcs).then(function (npcData) {
+            const prepared = self.prepareMapData(mapData, npcData, mapId);
+            return self.preloadMapAssets(entry.assets, prepared).then(function () {
+                return prepared;
+            });
+        }, function (jqXHR, textStatus, errorThrown) {
+            throw self.normalizeAjaxError(jqXHR, textStatus, errorThrown, entry.npcs);
+        });
+    }, function (jqXHR, textStatus, errorThrown) {
+        throw self.normalizeAjaxError(jqXHR, textStatus, errorThrown, entry.data);
+    });
+};
+
+Game.prototype.isPreparedTileWalkable = function (prepared, x, y) {
+    if (!prepared || !Number.isInteger(x) || !Number.isInteger(y) ||
+        x < 0 || y < 0 || x >= prepared.width || y >= prepared.height) return false;
+    const tileType = this.tileTypes[prepared.mapTiles[y][x]];
+    return !!tileType && !tileType.block;
+};
+
+Game.prototype.preloadMapAssets = function (assets, prepared) {
+    if (typeof Image === "undefined") return Promise.resolve();
+    const expectedWidth = prepared.width * this.tileSize;
+    const expectedHeight = prepared.height * this.tileSize;
+    const paths = [assets.background, assets.overlay];
+    return Promise.all(paths.map(function (src) {
+        return new Promise(function (resolve, reject) {
+            const image = new Image();
+            image.onload = function () {
+                const width = image.naturalWidth || image.width;
+                const height = image.naturalHeight || image.height;
+                if (width !== expectedWidth || height !== expectedHeight) {
+                    const err = new Error("Kích thước asset '" + src + "' không khớp kích thước map.");
+                    err.name = "MapDataError";
+                    reject(err);
+                    return;
+                }
+                resolve();
+            };
+            image.onerror = function () {
+                const err = new Error("Không tải được asset map '" + src + "'.");
+                err.name = "MapDataError";
+                reject(err);
+            };
+            image.src = src;
+        });
+    }));
+};
+
+// Validate the trusted manifest before resolving map IDs from saved player data.
+Game.prototype.validateWorldRegistry = function (registry) {
+    const fail = function (message) {
+        const err = new Error(message);
+        err.name = "MapDataError";
+        throw err;
+    };
+    const isObject = function (value) {
+        return value !== null && typeof value === "object" && !Array.isArray(value);
+    };
+
+    if (!isObject(registry) || registry.version !== 1 || !isObject(registry.maps)) {
+        fail("World Registry phải là object version 1 và có danh sách maps hợp lệ.");
+    }
+
+    const mapIds = Object.keys(registry.maps);
+    if (mapIds.length === 0 || typeof registry.defaultMapId !== "string" ||
+        !Object.prototype.hasOwnProperty.call(registry.maps, registry.defaultMapId)) {
+        fail("defaultMapId phải trỏ đến một map có trong World Registry.");
+    }
+
+    const validPath = function (value, prefix, suffix) {
+        return typeof value === "string" && value.startsWith(prefix) && value.endsWith(suffix) &&
+            value.indexOf("..") === -1 && value.indexOf("\\") === -1 &&
+            value.indexOf("?") === -1 && value.indexOf("#") === -1;
+    };
+
+    for (let i = 0; i < mapIds.length; i++) {
+        const mapId = mapIds[i];
+        const map = registry.maps[mapId];
+        if (!/^[A-Za-z0-9_-]+$/.test(mapId) || !isObject(map) ||
+            !validPath(map.data, "/res/", ".json") || !validPath(map.npcs, "/res/npcs/", ".json")) {
+            fail("Cấu hình dữ liệu hoặc NPC của map '" + mapId + "' không hợp lệ.");
+        }
+
+        if (!isObject(map.assets) || typeof map.assets.background !== "string" ||
+            typeof map.assets.overlay !== "string" ||
+            !validPath(map.assets.background, "/img/maps/", ".png") ||
+            !validPath(map.assets.overlay, "/img/maps/", ".png")) {
+            fail("Map '" + mapId + "' thiếu đường dẫn background hoặc overlay.");
+        }
+
+        if (!map.spawnPoints || !isObject(map.spawnPoints) || Object.keys(map.spawnPoints).length === 0 ||
+            (map.transitions !== undefined && !Array.isArray(map.transitions))) {
+            fail("Spawn point hoặc transition của map '" + mapId + "' không hợp lệ.");
+        }
+    }
+
+    for (let i = 0; i < mapIds.length; i++) {
+        const mapId = mapIds[i];
+        const map = registry.maps[mapId];
+        const ids = new Set();
+        for (let j = 0; j < (map.transitions || []).length; j++) {
+            const transition = map.transitions[j];
+            const targetMap = transition && transition.target && registry.maps[transition.target.mapId];
+            if (!transition || typeof transition.id !== "string" || !transition.id || ids.has(transition.id) ||
+                !transition.tile || !Number.isInteger(transition.tile.x) || !Number.isInteger(transition.tile.y) ||
+                !targetMap || !targetMap.spawnPoints || !Object.prototype.hasOwnProperty.call(targetMap.spawnPoints, transition.target.spawnId)) {
+                fail("Transition của map '" + mapId + "' tham chiếu map hoặc spawn không hợp lệ.");
+            }
+            ids.add(transition.id);
+        }
+    }
+
+    return registry.maps;
 };
 
 Game.prototype.normalizeAjaxError = function (jqXHR, textStatus, errorThrown, url) {

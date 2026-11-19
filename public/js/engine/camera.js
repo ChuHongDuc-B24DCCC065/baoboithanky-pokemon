@@ -47,11 +47,49 @@ Game.prototype.cameraGetLimit = function (obj) {
     return add;
 };
 
+Game.prototype.scheduleCameraUpdate = function (callback, delay) {
+    if (!Array.isArray(this._cameraTimers)) this._cameraTimers = [];
+    const self = this;
+    const timer = setTimeout(function () {
+        self._cameraTimers = self._cameraTimers.filter(id => id !== timer);
+        callback();
+    }, delay);
+    this._cameraTimers.push(timer);
+    return timer;
+};
+
+Game.prototype.cancelCameraMotion = function () {
+    if (Array.isArray(this._cameraTimers)) {
+        this._cameraTimers.forEach(clearTimeout);
+        this._cameraTimers = [];
+    }
+    if (this.$world && this.$world.stop) this.$world.stop(true, false);
+};
+
+Game.prototype.cameraResetToPlayer = function () {
+    if (!this.player || !this.player.position || !this.$world) return;
+    this.cancelCameraMotion();
+
+    const mapWidth = this.mapData.width * this.tileSize;
+    const mapHeight = this.mapData.height * this.tileSize;
+    const maxLeft = Math.max(0, mapWidth - this.level.size.width);
+    const maxTop = Math.max(0, mapHeight - this.level.size.height);
+    let left = this.level.scale.x - (this.player.position.x * this.tileSize);
+    let top = this.level.scale.y - (this.player.position.y * this.tileSize);
+
+    if (mapWidth <= this.level.size.width) left = (this.level.size.width - mapWidth) / 2;
+    else left = Math.max(-maxLeft, Math.min(0, left));
+    if (mapHeight <= this.level.size.height) top = (this.level.size.height - mapHeight) / 2;
+    else top = Math.max(-maxTop, Math.min(0, top));
+
+    this.$world.css({ left: left + "px", top: top + "px" });
+};
+
 // need to be refactored
 Game.prototype.cameraUpdate = function (obj, centralize, mapMaxLimit, timer) {
     if (obj.min) {
         if (obj.min.indexOf("width") > -1) { //min height
-            setTimeout(() => {
+            this.scheduleCameraUpdate(() => {
                 this.$world.stop(false, false).animate({
                     "left": 0,
                     "top": centralize.top >= 1 ? null : centralize.top + "px"
@@ -60,7 +98,7 @@ Game.prototype.cameraUpdate = function (obj, centralize, mapMaxLimit, timer) {
         };
 
         if (obj.min.indexOf("height") > -1) { //min height
-            setTimeout(() => {
+            this.scheduleCameraUpdate(() => {
                 this.$world.stop(false, false).animate({
                     "left": centralize.left  >= 1 ? null : centralize.left + "px",
                     "top": 0
@@ -77,7 +115,7 @@ Game.prototype.cameraUpdate = function (obj, centralize, mapMaxLimit, timer) {
         };
 
         if (obj.max.indexOf("width") > -1) { // max width
-            setTimeout(() => {
+            this.scheduleCameraUpdate(() => {
                 this.$world.stop(false, false).animate({
                     "left": "-" + mapMaxLimit.width + "px",
                     "top": centralize.top >= 1 ? null : centralize.top + "px"
@@ -86,7 +124,7 @@ Game.prototype.cameraUpdate = function (obj, centralize, mapMaxLimit, timer) {
         };
 
         if (obj.max.indexOf("height") > -1) { // max width
-            setTimeout(() => {
+            this.scheduleCameraUpdate(() => {
                 this.$world.stop(false, false).animate({
                     "left": centralize.left >= 1  ? null : centralize.left + "px",
                     "top": "-" + mapMaxLimit.height + "px"

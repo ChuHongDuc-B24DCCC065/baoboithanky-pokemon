@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mapId": "forest_path",
+  "npcs": [
+    {
+      "id": "hiker-path",
+      "name": "Người đi bộ",
+      "position": {
+        "x": 18,
+        "y": 28
+      },
+      "sprite": "leaf",
+      "facing": "up",
+      "collision": true,
+      "dialogue": [
+        "Con đường hình chữ U này vòng quanh khu rừng.",
+        "Khoảng đất trống ở giữa rất yên tĩnh đấy."
+      ],
+      "questIds": []
+    }
+  ]
+}

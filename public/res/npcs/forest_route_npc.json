@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "mapId": "forest_route",
+  "npcs": [
+    {
+      "id": "forest-guide",
+      "name": "Người đi rừng",
+      "position": { "x": 2, "y": 5 },
+      "sprite": "leaf",
+      "facing": "down",
+      "collision": true,
+      "dialogue": [
+        "Khu rừng này có nhiều Pokémon ẩn mình lắm.",
+        "Hãy đi cẩn thận và quan sát xung quanh nhé.",
+        "Nếu gặp khó khăn, cứ quay lại tìm tôi."
+      ],
+      "questIds": []
+    }
+  ]
+}

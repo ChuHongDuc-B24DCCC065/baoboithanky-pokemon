@@ -19,8 +19,7 @@ const isApiRequest = (req) => {
 
 /**
  * Middleware yêu cầu người dùng phải đăng nhập và tài khoản đang hoạt động
- * Ưu tiên xác thực Firebase Session Cookie (poke.sid) với checkRevoked=true,
- * và fallback sang MongoDB session trong giai đoạn chuyển đổi.
+ * Xác thực Firebase Session Cookie (poke.sid) với checkRevoked=true.
  */
 const requireAuth = async (req, res, next) => {
     try {

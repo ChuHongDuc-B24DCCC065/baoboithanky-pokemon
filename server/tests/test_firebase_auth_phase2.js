@@ -5,7 +5,7 @@
  * Phân loại bài test:
  * - UNIT / HELPER TESTS: Kiểm tra các hàm logic nghiệp vụ, chuẩn hóa và bảo mật.
  * - SIMULATION TESTS: Kiểm tra mô phỏng CSRF double-submit, Active Socket Registry.
- * - SECURITY REGRESSION TESTS: Kiểm tra entropy secret (>= 32 chars), Host-header poisoning, Non-ObjectId Mongo fallback rejection.
+ * - SECURITY REGRESSION TESTS: Kiểm tra entropy secret (>= 32 chars) và Host-header poisoning.
  * - ENVIRONMENT PROBE: Khảo sát trạng thái loopback port của Firebase Emulator.
  * 
  * LƯU Ý THEO AGENTS.MD:
@@ -405,9 +405,9 @@ runTest("4.2. generateUuid sinh mã UUID chuẩn RFC 4122 v4", () => {
 });
 
 // =============================================================================
-// NHÓM 5: CONTROLLER CONTRACT, API HELPERS & MONGO FALLBACK DEFENSE
+// NHÓM 5: CONTROLLER CONTRACT & API HELPERS
 // =============================================================================
-console.log("\n[Nhóm 5] Kiểm tra API Helpers & Phòng thủ MongoDB Fallback:");
+console.log("\n[Nhóm 5] Kiểm tra API Helpers:");
 
 runTest("5.1. isApiRequest phân loại chính xác API và Page Navigation", () => {
     assert.strictEqual(isApiRequest({ path: "/api/auth/me" }), true);

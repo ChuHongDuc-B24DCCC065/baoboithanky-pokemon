@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "defaultMapId": "test",
+  "maps": {
+    "test": {
+      "displayName": "Làng Bình Minh",
+      "data": "/res/test.json",
+      "npcs": "/res/npcs/test.json",
+      "assets": { "background": "/img/maps/test.png", "overlay": "/img/maps/test_overlay.png" },
+      "spawnPoints": {
+        "default":     { "x": 1,  "y": 1,  "facing": "down" },
+        "from_forest": { "x": 25, "y": 28, "facing": "up" }
+      },
+      "transitions": [
+        {
+          "id": "test_to_forest",
+          "tile": { "x": 7, "y": 1 },
+          "target": { "mapId": "forest_route", "spawnId": "from_test" },
+          "displayName": "Đồng Cỏ Xanh"
+        }
+      ]
+    },
+
+    "forest_route": {
+      "displayName": "Đồng Cỏ Xanh",
+      "data": "/res/forest_route_info.json",
+      "npcs": "/res/npcs/forest_route_npc.json",
+      "assets": { "background": "/img/maps/forest_route.png", "overlay": "/img/maps/forest_route_overlay.png" },
+      "spawnPoints": {
+        "default":      { "x": 1, "y": 6, "facing": "right" },
+        "from_test":    { "x": 1, "y": 6, "facing": "right" },
+        "from_village": { "x": 9, "y": 1, "facing": "down" }
+      },
+      "transitions": [
+        {
+          "id": "forest_to_test",
+          "tile": { "x": 0, "y": 6 },
+          "target": { "mapId": "test", "spawnId": "from_forest" },
+          "displayName": "Làng Bình Minh"
+        },
+        {
+          "id": "forest_to_village",
+          "tile": { "x": 9, "y": 0 },
+          "target": { "mapId": "village_pine", "spawnId": "default" },
+          "displayName": "Làng Thông"
+        }
+      ]
+    },
+
+    "village_pine": {
+      "displayName": "Làng Thông",
+      "data": "/res/village_pine_info.json",
+      "npcs": "/res/npcs/village_pine_npc.json",
+      "assets": { "background": "/img/maps/village_pine.png", "overlay": "/img/maps/village_pine_overlay.png" },
+      "spawnPoints": {
+        "default":          { "x": 19, "y": 2, "facing": "down" },
+        "from_forest_path": { "x": 19, "y": 2, "facing": "down" }
+      },
+      "transitions": [
+        {
+          "id": "village_pine_to_forest",
+          "tile": { "x": 18, "y": 0 },
+          "target": { "mapId": "forest_route", "spawnId": "from_village" },
+          "displayName": "Đồng Cỏ Xanh"
+        },
+        {
+          "id": "village_pine_to_forest_path",
+          "tile": { "x": 19, "y": 0 },
+          "target": { "mapId": "forest_path", "spawnId": "from_village" },
+          "displayName": "Rừng Thì Thầm"
+        }
+        
+      ]
+    },
+
+    "forest_path": {
+      "displayName": "Rừng Thì Thầm",
+      "data": "/res/forest_path_info.json",
+      "npcs": "/res/npcs/forest_path_npc.json",
+      "assets": { "background": "/img/maps/forest_path.png", "overlay": "/img/maps/forest_path_overlay.png" },
+      "spawnPoints": {
+        "default":      { "x": 6,  "y": 3, "facing": "down" },
+        "from_village": { "x": 6,  "y": 3, "facing": "down" },
+        "from_lake":    { "x": 32, "y": 3, "facing": "down" }
+      },
+      "transitions": [
+        {
+          "id": "forest_path_to_lake",
+          "tile": { "x": 32, "y": 0 },
+          "target": { "mapId": "lake_route", "spawnId": "from_forest" },
+          "displayName": "Thị Trấn Ven Hồ "
+        },
+        
+        {
+          "id": "forest_path_to_village",
+          "tile": { "x": 6,  "y": 0 },
+          "target": { "mapId": "village_pine", "spawnId": "from_forest_path" },
+          "displayName": "Làng Thông "
+        }
+        
+      ]
+    },
+
+    "lake_route": {
+      "displayName": "Thị Trấn Ven Hồ",
+      "data": "/res/lake_route_info.json",
+      "npcs": "/res/npcs/lake_route_npc.json",
+      "assets": { "background": "/img/maps/lake_route.png", "overlay": "/img/maps/lake_route_overlay.png" },
+      "spawnPoints": {
+        "default":     { "x": 3,  "y": 17, "facing": "right" },
+        "from_forest": { "x": 3,  "y": 17, "facing": "right" },
+        "from_cave":   { "x": 36, "y": 17, "facing": "left" }
+      },
+      "transitions": [
+        {
+          "id": "lake_to_forest_path",
+          "tile": { "x": 1, "y": 17 },
+          "target": { "mapId": "forest_path", "spawnId": "from_lake" },
+          "displayName": "Rừng Thì Thầm"
+        },
+        
+        {
+          "id": "lake_to_cave",
+          "tile": { "x": 38, "y": 17 },
+          "target": { "mapId": "cave_entrance", "spawnId": "from_lake" },
+          "displayName": "Hang Đá Cổ"
+        }
+        
+      ]
+    },
+
+    "cave_entrance": {
+      "displayName": "Hang Đá Cổ",
+      "data": "/res/cave_entrance_info.json",
+      "npcs": "/res/npcs/cave_entrance_npc.json",
+      "assets": { "background": "/img/maps/cave_entrance.png", "overlay": "/img/maps/cave_entrance_overlay.png" },
+      "spawnPoints": {
+        "default":   { "x": 19, "y": 16, "facing": "up" },
+        "from_lake": { "x": 3,  "y": 24, "facing": "right" }
+      },
+      "transitions": [
+        {
+          "id": "cave_to_lake",
+          "tile": { "x": 1, "y": 24 },
+          "target": { "mapId": "lake_route", "spawnId": "from_cave" },
+          "displayName": "Thị Trấn Ven Hồ"
+        }
+        
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "mapId": "lake_route",
+  "npcs": [
+    {
+      "id": "angler-bridge",
+      "name": "Người câu cá",
+      "position": {
+        "x": 14,
+        "y": 18
+      },
+      "sprite": "leaf",
+      "facing": "down",
+      "collision": true,
+      "dialogue": [
+        "Cây cầu gỗ này nối hai bờ hồ.",
+        "Nước ở đây sâu lắm, đừng thử bơi nhé!"
+      ],
+      "questIds": []
+    }
+  ]
+}

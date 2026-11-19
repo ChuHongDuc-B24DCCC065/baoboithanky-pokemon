@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "mapId": "test",
+  "npcs": [
+    {
+      "id": "guide-leaf",
+      "name": "Guide Leaf",
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "sprite": "leaf",
+      "facing": "down",
+      "collision": true,
+      "dialogue": [
+        "Chào mừng bạn đến với thế giới Pokémon!",
+        "Thị trấn này rất yên bình. Hãy dùng các phím WASD để dạo quanh nhé!",
+        "Chúc bạn có một chuyến hành trình tuyệt vời!"
+      ],
+      "questIds": []
+    }
+  ]
+}
