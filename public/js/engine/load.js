@@ -1,3 +1,56 @@
+Game.prototype.loadItemCatalog = function () {
+    const catalog = typeof PokeItemCatalog !== "undefined" ? PokeItemCatalog : null;
+    if (!catalog || typeof catalog.applyServerMetadata !== "function") {
+        return Promise.reject({
+            type: "ITEM_CATALOG_LOAD_ERROR",
+            userMessage: "Không thể khởi tạo catalog vật phẩm. Game chưa được mở để tránh dùng giá vật phẩm cũ."
+        });
+    }
+
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+    return fetch("/api/economy/item-catalog", {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        credentials: "same-origin",
+        signal: controller ? controller.signal : undefined
+    }).then(function (response) {
+        return response.json().catch(function () { return null; }).then(function (payload) {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (response.status === 401) {
+                window.location.href = "/login";
+                throw {
+                    type: "ITEM_CATALOG_LOAD_ERROR",
+                    status: 401,
+                    userMessage: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tải catalog vật phẩm mới nhất."
+                };
+            }
+            if (!response.ok || !payload || payload.success !== true || !payload.data ||
+                !catalog.applyServerMetadata(payload.data.items)) {
+                throw {
+                    type: "ITEM_CATALOG_LOAD_ERROR",
+                    status: response.status,
+                    technicalDetail: "Invalid or unavailable /api/economy/item-catalog response",
+                    userMessage: "Không thể tải catalog vật phẩm mới nhất. Game chưa được mở để tránh dùng giá vật phẩm cũ. Vui lòng thử tải lại."
+                };
+            }
+            return true;
+        });
+    }).catch(function (error) {
+        if (timeoutId) clearTimeout(timeoutId);
+        if (error && error.type === "ITEM_CATALOG_LOAD_ERROR") throw error;
+        const timedOut = (error && error.name === "AbortError") || (controller && controller.signal.aborted);
+        throw {
+            type: "ITEM_CATALOG_LOAD_ERROR",
+            status: 0,
+            technicalDetail: timedOut ? "Item catalog request timed out" : (error && error.message ? error.message : "Network error"),
+            userMessage: timedOut
+                ? "Tải catalog vật phẩm quá thời gian chờ. Game chưa được mở để tránh dùng giá vật phẩm cũ. Vui lòng thử lại."
+                : "Không thể kết nối để tải catalog vật phẩm mới nhất. Game chưa được mở để tránh dùng giá vật phẩm cũ. Vui lòng kiểm tra mạng rồi thử lại."
+        };
+    });
+};
+
 Game.prototype.fetchMapData = function () {
     const self = this;
     const registryUrl = "/res/world.json";
@@ -291,12 +344,288 @@ Game.prototype.normalizeGameError = function (err, source) {
     };
 };
 
+Game.prototype.migrateLegacyInventory = function () {
+    const self = this;
+    const uid = this.savedData && this.savedData.userId;
+    const emptyEquipment = { armor: null, shoes: null, accessory: null, held_item: null };
+
+    function migrationError(message, detail, status) {
+        return {
+            type: "ECONOMY_MIGRATION_ERROR",
+            status: status || 0,
+            userMessage: message,
+            technicalDetail: detail || message
+        };
+    }
+
+    function requestJson(url, options) {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+        const requestOptions = Object.assign({}, options || {}, {
+            credentials: "same-origin",
+            signal: controller ? controller.signal : undefined
+        });
+
+        return fetch(url, requestOptions)
+            .then(function (response) {
+                return response.json().catch(function () { return null; }).then(function (payload) {
+                    if (timeoutId) clearTimeout(timeoutId);
+                    if (response.status === 401) {
+                        window.location.href = "/login";
+                        throw migrationError(
+                            "Phiên đăng nhập đã hết hạn. Đang chuyển hướng đến trang đăng nhập...",
+                            "HTTP 401 from " + url,
+                            401
+                        );
+                    }
+                    if (!response.ok || !payload || payload.success !== true || !payload.data) {
+                        const serverMessage = payload && payload.message;
+                        throw migrationError(
+                            "Không thể đồng bộ Inventory với máy chủ. Dữ liệu legacy vẫn được giữ nguyên; vui lòng thử tải lại.",
+                            "HTTP " + response.status + " from " + url + (serverMessage ? ": " + serverMessage : ""),
+                            response.status
+                        );
+                    }
+                    return payload.data;
+                });
+            })
+            .catch(function (error) {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (error && error.type === "ECONOMY_MIGRATION_ERROR") throw error;
+                const isTimeout = (error && error.name === "AbortError") || (controller && controller.signal.aborted);
+                throw migrationError(
+                    "Không thể đồng bộ Inventory với máy chủ. Dữ liệu legacy vẫn được giữ nguyên; vui lòng thử tải lại.",
+                    (isTimeout ? "Request timed out: " : "Network error: ") + url,
+                    0
+                );
+            });
+    }
+
+    function parseLegacyObject(rawValue, key, fallback) {
+        if (rawValue === null) return fallback;
+        let parsed;
+        try {
+            parsed = JSON.parse(rawValue);
+        } catch (parseError) {
+            throw migrationError(
+                "Dữ liệu Inventory cũ bị lỗi định dạng. Dữ liệu vẫn được giữ nguyên để kiểm tra.",
+                "Invalid JSON in " + key + ": " + parseError.message
+            );
+        }
+        if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            throw migrationError("Dữ liệu Inventory cũ không hợp lệ và vẫn được giữ nguyên.", "Invalid object in " + key);
+        }
+        return parsed;
+    }
+
+    function readLegacyPayload() {
+        if (typeof localStorage === "undefined") {
+            throw migrationError("Không thể truy cập bộ nhớ trình duyệt; dữ liệu Inventory cũ chưa được thay đổi.", "localStorage unavailable");
+        }
+
+        const prefix = "poke_proto_" + uid + "_";
+        try {
+            return {
+                items: parseLegacyObject(localStorage.getItem(prefix + "inventory"), prefix + "inventory", {}),
+                equipment: parseLegacyObject(localStorage.getItem(prefix + "equipment"), prefix + "equipment", emptyEquipment)
+            };
+        } catch (error) {
+            if (error && error.type === "ECONOMY_MIGRATION_ERROR") throw error;
+            throw migrationError(
+                "Không thể đọc Inventory legacy. Dữ liệu cũ vẫn được giữ nguyên.",
+                "localStorage read failed: " + (error ? error.message : "unknown error")
+            );
+        }
+    }
+
+    function validateSnapshot(snapshot) {
+        if (!snapshot || !Number.isSafeInteger(snapshot.balance) || snapshot.balance < 0 ||
+            !snapshot.items || typeof snapshot.items !== "object" || Array.isArray(snapshot.items) ||
+            !snapshot.equipment || typeof snapshot.equipment !== "object" || Array.isArray(snapshot.equipment) ||
+            !snapshot.migration || !["pending", "completed"].includes(snapshot.migration.status)) {
+            throw migrationError("Snapshot Economy từ máy chủ không hợp lệ; game chưa tiếp tục.", "Invalid economy snapshot response");
+        }
+        return snapshot;
+    }
+
+    function setAuthoritativeSnapshot(snapshot) {
+        // Keep the server snapshot in memory; localStorage remains legacy migration input only.
+        self.economySnapshot = snapshot;
+        return self;
+    }
+
+    if (typeof uid !== "string" || !uid.trim()) {
+        return Promise.reject(migrationError("Không xác định được tài khoản để đồng bộ Inventory.", "Authenticated UID is unavailable"));
+    }
+
+    return requestJson("/api/economy")
+        .then(validateSnapshot)
+        .then(function (snapshot) {
+            if (snapshot.migration.status === "completed") {
+                return snapshot;
+            }
+
+            const legacyPayload = readLegacyPayload();
+            return requestJson("/api/auth/csrf-token")
+                .then(function (csrfData) {
+                    if (typeof csrfData.csrfToken !== "string" || !csrfData.csrfToken) {
+                        throw migrationError("Không lấy được CSRF token để gửi migration.", "Missing CSRF token from /api/auth/csrf-token");
+                    }
+                    return requestJson("/api/economy/migrate-inventory", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": csrfData.csrfToken
+                        },
+                        body: JSON.stringify(legacyPayload)
+                    });
+                })
+                .then(function (migrationData) {
+                    if (!migrationData.migration || migrationData.migration.status !== "completed") {
+                        throw migrationError("Máy chủ chưa xác nhận migration hoàn tất.", "Migration response did not include completed marker");
+                    }
+                    return requestJson("/api/economy").then(validateSnapshot);
+                });
+        })
+        .then(function (snapshot) {
+            if (snapshot.migration.status !== "completed") {
+                throw migrationError("Migration Inventory chưa hoàn tất; game chưa tiếp tục.", "Economy migration is still pending");
+            }
+            return setAuthoritativeSnapshot(snapshot);
+        });
+};
+
+Game.prototype.migrateLegacyParty = function () {
+    const self = this;
+    const uid = this.savedData && this.savedData.userId;
+
+    function partyError(message, detail, status) {
+        return {
+            type: "PARTY_SYNC_ERROR",
+            status: status || 0,
+            userMessage: message,
+            technicalDetail: detail || message
+        };
+    }
+
+    function requestJson(url, options) {
+        const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+        return fetch(url, Object.assign({}, options || {}, {
+            credentials: "same-origin",
+            signal: controller ? controller.signal : undefined
+        })).then(function (response) {
+            return response.json().catch(function () { return null; }).then(function (payload) {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (response.status === 401) {
+                    window.location.href = "/login";
+                    throw partyError("Phiên đăng nhập đã hết hạn. Đang chuyển hướng đến trang đăng nhập...", "HTTP 401 from " + url, 401);
+                }
+                if (!response.ok || !payload || payload.success !== true || !payload.data) {
+                    throw partyError(
+                        "Không thể đồng bộ Party với máy chủ. Dữ liệu Party cũ vẫn được giữ nguyên; vui lòng thử tải lại.",
+                        "HTTP " + response.status + " from " + url + (payload && payload.code ? ": " + payload.code : ""),
+                        response.status
+                    );
+                }
+                return payload;
+            });
+        }).catch(function (error) {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (error && error.type === "PARTY_SYNC_ERROR") throw error;
+            const timedOut = (error && error.name === "AbortError") || (controller && controller.signal.aborted);
+            throw partyError(
+                "Không thể đồng bộ Party với máy chủ. Dữ liệu Party cũ vẫn được giữ nguyên; vui lòng thử tải lại.",
+                (timedOut ? "Request timed out: " : "Network error: ") + url,
+                0
+            );
+        });
+    }
+
+    function validateSnapshot(snapshot) {
+        if (!snapshot || snapshot.schemaVersion !== 1 || !Array.isArray(snapshot.pokemon) || snapshot.pokemon.length > 6 ||
+            !(snapshot.activePokemonId === null || typeof snapshot.activePokemonId === "string") ||
+            typeof snapshot.starterChosen !== "boolean" || !snapshot.migration ||
+            !["pending", "completed"].includes(snapshot.migration.status) || !Number.isSafeInteger(snapshot.revision)) {
+            throw partyError("Snapshot Party từ máy chủ không hợp lệ; game chưa tiếp tục.", "Invalid /api/party response");
+        }
+        return snapshot;
+    }
+
+    function readLegacyParty() {
+        if (typeof localStorage === "undefined") {
+            throw partyError("Không thể đọc Party cũ; dữ liệu hiện có vẫn được giữ nguyên.", "localStorage unavailable");
+        }
+        const prefix = "poke_proto_" + uid + "_";
+        try {
+            const rawParty = localStorage.getItem(prefix + "party");
+            let pokemon = rawParty === null ? [] : JSON.parse(rawParty);
+            if (!Array.isArray(pokemon) || pokemon.length > 6) throw new Error("Party legacy phải là mảng tối đa 6 Pokémon.");
+            const activePokemonId = localStorage.getItem(prefix + "active_pokemon_id") || null;
+            const starterChosen = localStorage.getItem(prefix + "starter_chosen") === "true" || pokemon.length > 0;
+            const livingPokemon = pokemon.filter((entry) => entry && Number.isSafeInteger(entry.currentHp) && entry.currentHp > 0);
+            const activeExists = activePokemonId && livingPokemon.some((entry) => entry.instanceId === activePokemonId);
+            return {
+                pokemon,
+                activePokemonId: activeExists ? activePokemonId : (livingPokemon[0] ? livingPokemon[0].instanceId : null),
+                starterChosen
+            };
+        } catch (error) {
+            throw partyError(
+                "Dữ liệu Party cũ không hợp lệ. Game chưa tiếp tục và dữ liệu legacy vẫn được giữ nguyên.",
+                "Invalid Party legacy data: " + (error && error.message ? error.message : "parse error")
+            );
+        }
+    }
+
+    if (typeof uid !== "string" || !uid.trim()) {
+        return Promise.reject(partyError("Không xác định được tài khoản để đồng bộ Party.", "Authenticated UID is unavailable"));
+    }
+
+    return requestJson("/api/party/")
+        .then(function (response) {
+            const snapshot = validateSnapshot(response.data);
+            if (snapshot.migration.status === "completed") return snapshot;
+
+            const legacyPayload = readLegacyParty();
+            return requestJson("/api/auth/csrf-token")
+                .then(function (csrfResponse) {
+                    const csrfToken = csrfResponse.data && csrfResponse.data.csrfToken || csrfResponse.csrfToken;
+                    if (typeof csrfToken !== "string" || !csrfToken) {
+                        throw partyError("Không lấy được CSRF token để gửi migration Party.", "Missing CSRF token");
+                    }
+                    return requestJson("/api/party/migration", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+                        body: JSON.stringify(legacyPayload)
+                    });
+                })
+                .then(function (migrationResponse) {
+                    const migrated = validateSnapshot(migrationResponse.data);
+                    if (migrated.migration.status !== "completed" ||
+                        !["imported", "skipped_existing_data", "already_completed"].includes(migrationResponse.migrationOutcome)) {
+                        throw partyError("Máy chủ chưa xác nhận migration Party hoàn tất.", "Invalid Party migration result");
+                    }
+                    return requestJson("/api/party/").then(function (snapshotResponse) {
+                        return validateSnapshot(snapshotResponse.data);
+                    });
+                });
+        })
+        .then(function (snapshot) {
+            if (snapshot.migration.status !== "completed") {
+                throw partyError("Migration Party chưa hoàn tất; game chưa tiếp tục.", "Party migration remains pending");
+            }
+            self.partySnapshot = snapshot;
+            return snapshot;
+        });
+};
+
 Game.prototype.fetchSavedData = function () {
     const self = this;
     const dfd = $.Deferred();
 
     try {
-        let rawMap, rawX, rawY, rawFacing, rawChar, rawItems, rawChoices;
+        let rawMap, rawX, rawY, rawFacing, rawChar, rawChoices;
 
         try {
             rawMap = localStorage.getItem("map");
@@ -304,26 +633,12 @@ Game.prototype.fetchSavedData = function () {
             rawY = localStorage.getItem("y");
             rawFacing = localStorage.getItem("facing");
             rawChar = localStorage.getItem("character");
-            rawItems = localStorage.getItem("items");
             rawChoices = localStorage.getItem("choices");
         } catch (storageErr) {
             const err = new Error("Không thể đọc từ localStorage (" + (storageErr.message || storageErr) + ")");
             err.name = "StorageAccessError";
             err.rawError = storageErr;
             throw err;
-        }
-
-        let parsedItems = {};
-        if (rawItems !== null && rawItems !== undefined && rawItems !== "") {
-            try {
-                parsedItems = JSON.parse(rawItems) || {};
-            } catch (parseErr) {
-                const err = new Error("Dữ liệu vật phẩm ('items') trong localStorage bị lỗi cú pháp JSON.");
-                err.name = "SavedDataParseError";
-                err.key = "items";
-                err.rawError = parseErr;
-                throw err;
-            }
         }
 
         let parsedChoices = {};
@@ -345,7 +660,7 @@ Game.prototype.fetchSavedData = function () {
             y: (rawY !== null && rawY !== undefined && rawY !== "") ? parseInt(rawY, 10) || 1 : 1,
             facing: rawFacing || "down",
             character: rawChar || "red",
-            item: parsedItems,
+            item: {},
             choices: parsedChoices,
             uid: Date.now()
         };
@@ -405,6 +720,9 @@ Game.prototype.fetchSavedData = function () {
                         }
                         self.savedData.username = user.username;
                         self.savedData.userId = user.id;
+                        if (typeof self.loadCharacterProgress === "function") {
+                            self.loadCharacterProgress(user.id);
+                        }
 
                         // Khôi phục vị trí người chơi từ Firestore (ưu tiên hơn localStorage)
                         if (user.position && Number.isInteger(user.position.x) && Number.isInteger(user.position.y)) {

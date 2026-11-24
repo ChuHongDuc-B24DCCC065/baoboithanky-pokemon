@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poké-Engine — Bảng Quản Trị Hệ Thống</title>
+    <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body class="admin-app">
+    <!-- TRẠNG THÁI 1: ĐANG TẢI & XÁC MINH QUYỀN (LOADING) -->
+    <div id="state-loading" class="state-screen active" role="status" aria-live="polite">
+        <div class="state-card loading-card">
+            <div class="pokeball-spinner" aria-hidden="true"></div>
+            <h2>Đang xác thực quyền Quản trị viên...</h2>
+            <p>Vui lòng chờ trong giây lát trong khi hệ thống kiểm tra phiên đăng nhập.</p>
+        </div>
+    </div>
+
+    <!-- TRẠNG THÁI 2: CHƯA ĐĂNG NHẬP HOẶC HẾT HẠN (401 UNAUTHORIZED) -->
+    <div id="state-unauthenticated" class="state-screen" role="alert">
+        <div class="state-card">
+            <div class="state-icon icon-auth-required" aria-hidden="true">🔒</div>
+            <h2>Yêu Cầu Đăng Nhập</h2>
+            <p id="unauth-message">Bạn chưa đăng nhập hoặc phiên làm việc đã hết hạn. Vui lòng đăng nhập bằng tài khoản Quản trị viên để tiếp tục.</p>
+            <div class="state-actions">
+                <a href="/login" class="btn btn-primary">Đăng Nhập Ngay</a>
+                <a href="/" class="btn btn-secondary">Về Trang Chủ Game</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRẠNG THÁI 3: KHÔNG CÓ QUYỀN ADMIN (403 FORBIDDEN) -->
+    <div id="state-forbidden" class="state-screen" role="alert">
+        <div class="state-card">
+            <div class="state-icon icon-forbidden" aria-hidden="true">⛔</div>
+            <h2>Truy Cập Bị Từ Chối (403 Forbidden)</h2>
+            <p id="forbidden-message">Tài khoản của bạn đã được xác thực nhưng <strong>không có quyền Quản trị viên (Admin)</strong> hoặc đã bị vô hiệu hóa.</p>
+            <div class="state-info-box">
+                <p>Nếu bạn là quản trị viên hệ thống, vui lòng chạy lệnh CLI để kích hoạt quyền:</p>
+                <code>node scripts/grant-admin.js --username &lt;tên_tài_khoản&gt;</code>
+            </div>
+            <div class="state-actions">
+                <a href="/" class="btn btn-primary">Quay Lại Trò Chơi</a>
+                <button type="button" id="btn-recheck-auth" class="btn btn-secondary">Kiểm Tra Lại</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRẠNG THÁI 4: LỖI HẠ TẦNG / KẾT NỐI (500 INTERNAL ERROR) -->
+    <div id="state-error" class="state-screen" role="alert">
+        <div class="state-card">
+            <div class="state-icon icon-error" aria-hidden="true">⚠️</div>
+            <h2>Lỗi Kết Nối Máy Chủ</h2>
+            <p id="error-message">Không thể kết nối đến máy chủ quản trị hoặc cơ sở dữ liệu Firebase. Vui lòng kiểm tra trạng thái backend server.</p>
+            <div class="state-actions">
+                <button type="button" id="btn-retry-auth" class="btn btn-primary">Thử Lại</button>
+                <a href="/" class="btn btn-secondary">Về Trang Chủ Game</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRẠNG THÁI 5: QUẢN TRỊ VIÊN ĐÃ XÁC THỰC (AUTHORIZED DASHBOARD) -->
+    <div id="state-authorized" class="state-screen dashboard-layout">
+        <!-- SIDEBAR ĐIỀU HƯỚNG -->
+        <aside class="admin-sidebar" aria-label="Điều hướng Quản trị">
+            <div class="sidebar-brand">
+                <div class="brand-pokeball" aria-hidden="true"></div>
+                <div class="brand-text">
+                    <span class="brand-title">Poké-Engine</span>
+                    <span class="brand-badge">ADMIN PORTAL</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">HỆ THỐNG</div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link active" data-tab="dashboard">
+                            <span class="nav-icon" aria-hidden="true">📊</span>
+                            <span class="nav-text">Bảng Điều Khiển</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="nav-section-label">QUẢN LÝ DỮ LIỆU</div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-tab="players">
+                            <span class="nav-icon" aria-hidden="true">👥</span>
+                            <span class="nav-text">Người Chơi</span>
+                            <span class="nav-tag tag-ready">Hoạt động</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-tab="pokemon">
+                            <span class="nav-icon" aria-hidden="true">⚡</span>
+                            <span class="nav-text">Pokémon</span>
+                            <span class="nav-tag tag-ready">Catalog</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-tab="items">
+                            <span class="nav-icon" aria-hidden="true">🎒</span>
+                            <span class="nav-text">Vật Phẩm</span>
+                            <span class="nav-tag tag-ready">Catalog</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-tab="maps">
+                            <span class="nav-icon" aria-hidden="true">🗺️</span>
+                            <span class="nav-text">Bản Đồ</span>
+                            <span class="nav-tag tag-soon">Sắp Có</span>
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button type="button" class="nav-link" data-tab="settings">
+                            <span class="nav-icon" aria-hidden="true">⚙️</span>
+                            <span class="nav-text">Cài Đặt</span>
+                            <span class="nav-tag tag-soon">Sắp Có</span>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="/" class="footer-link-game">
+                    <span class="footer-icon" aria-hidden="true">🎮</span>
+                    <span>Vào Game</span>
+                </a>
+                <button type="button" id="btn-admin-logout" class="footer-link-logout">
+                    <span class="footer-icon" aria-hidden="true">🚪</span>
+                    <span>Đăng Xuất</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- KHU VỰC NỘI DUNG CHÍNH (MAIN WRAPPER) -->
+        <div class="admin-main">
+            <!-- HEADER QUẢN TRỊ -->
+            <header class="admin-header">
+                <div class="header-breadcrumb">
+                    <span class="breadcrumb-root">Admin</span>
+                    <span class="breadcrumb-separator">/</span>
+                    <span id="breadcrumb-current" class="breadcrumb-active">Bảng Điều Khiển</span>
+                </div>
+
+                <div class="header-actions">
+                    <div class="api-status-pill">
+                        <span class="status-dot"></span>
+                        <span class="status-label">Backend API: Online</span>
+                    </div>
+
+                    <div class="admin-profile-chip">
+                        <div class="profile-avatar" id="header-avatar" aria-hidden="true">🔴</div>
+                        <div class="profile-details">
+                            <span id="header-username" class="profile-name">Đang tải...</span>
+                            <span class="profile-role">ADMIN</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- NỘI DUNG CÁC TAB (CONTENT PANELS) -->
+            <main class="admin-content">
+                <!-- TAB 1: BẢNG ĐIỀU KHIỂN TỔNG QUAN -->
+                <section id="panel-dashboard" class="content-panel active">
+                    <div class="panel-welcome-banner">
+                        <div class="welcome-text">
+                            <h2>Xin chào, <span id="welcome-admin-name">Quản trị viên</span>!</h2>
+                            <p>Chào mừng bạn đến với Cổng Quản Trị Hệ Thống Poké-Engine. Dữ liệu quản lý người chơi đã được kết nối trực tiếp với Cloud Firestore.</p>
+                        </div>
+                        <div class="welcome-badge">
+                            <span class="badge-role">ADMINISTRATOR</span>
+                            <span class="badge-version">Engine v1.0</span>
+                        </div>
+                    </div>
+
+                    <!-- LƯỚI THỐNG KÊ TỔNG QUAN (4 STAT CARDS) -->
+                    <div class="overview-stats-grid">
+                        <div class="stat-card stat-card-total">
+                            <div class="stat-icon-box" aria-hidden="true">👥</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Tổng Người Chơi</span>
+                                <span id="stat-total-players" class="stat-number">---</span>
+                                <span class="stat-subtext">Toàn bộ tài khoản hệ thống</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-active">
+                            <div class="stat-icon-box" aria-hidden="true">🟢</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Đang Hoạt Động</span>
+                                <span id="stat-active-players" class="stat-number">---</span>
+                                <span class="stat-subtext">Tài khoản isActive = true</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-locked">
+                            <div class="stat-icon-box" aria-hidden="true">🔒</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Tài Khoản Đã Khóa</span>
+                                <span id="stat-locked-players" class="stat-number">---</span>
+                                <span class="stat-subtext">Tài khoản isActive = false</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card stat-card-new">
+                            <div class="stat-icon-box" aria-hidden="true">✨</div>
+                            <div class="stat-content">
+                                <span class="stat-label">Đăng Ký Mới (7 Ngày)</span>
+                                <span id="stat-new-players" class="stat-number">---</span>
+                                <span class="stat-subtext">7 ngày lịch gần nhất (GMT+7)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KHU VỰC BIỂU ĐỒ 7 NGÀY & NGƯỜI CHƠI MỚI NHẤT (TWO COLUMNS) -->
+                    <div class="overview-analytics-grid">
+                        <!-- CỘT 1: BIỂU ĐỒ ĐĂNG KÝ 7 NGÀY -->
+                        <div class="analytics-card chart-card">
+                            <div class="analytics-header">
+                                <div>
+                                    <h3 class="analytics-title">Biểu Đồ Đăng Ký (7 Ngày Gần Nhất)</h3>
+                                    <span class="analytics-subtitle">Múi giờ: Asia/Ho_Chi_Minh (GMT+7)</span>
+                                </div>
+                                <button type="button" id="btn-refresh-overview" class="btn-icon-refresh" title="Làm mới dữ liệu tổng quan" aria-label="Làm mới">
+                                    🔄
+                                </button>
+                            </div>
+
+                            <div class="analytics-body">
+                                <div id="chart-loading" class="analytics-state-box">
+                                    <div class="spinner-small"></div>
+                                    <span>Đang tải biểu đồ...</span>
+                                </div>
+
+                                <div id="chart-empty" class="analytics-state-box" style="display: none;">
+                                    <span class="state-icon">📊</span>
+                                    <span class="state-text">Chưa có lượt đăng ký mới trong 7 ngày qua.</span>
+                                </div>
+
+                                <div id="chart-container" class="chart-bars-wrap" style="display: none;">
+                                    <!-- Render cột biểu đồ bằng JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CỘT 2: 5 NGƯỜI CHƠI MỚI NHẤT -->
+                        <div class="analytics-card recent-players-card">
+                            <div class="analytics-header">
+                                <div>
+                                    <h3 class="analytics-title">Người Chơi Mới Đăng Ký</h3>
+                                    <span class="analytics-subtitle">5 tài khoản được khởi tạo gần đây nhất</span>
+                                </div>
+                                <button type="button" id="btn-overview-to-players" class="btn-link-switch">
+                                    <span>Xem Tất Cả</span>
+                                    <span aria-hidden="true">&rarr;</span>
+                                </button>
+                            </div>
+
+                            <div class="analytics-body">
+                                <div id="recent-players-loading" class="analytics-state-box">
+                                    <div class="spinner-small"></div>
+                                    <span>Đang tải danh sách người chơi...</span>
+                                </div>
+
+                                <div id="recent-players-empty" class="analytics-state-box" style="display: none;">
+                                    <span class="state-icon">👥</span>
+                                    <span class="state-text">Chưa có người chơi nào trên hệ thống.</span>
+                                </div>
+
+                                <div id="recent-players-table-wrap" class="recent-table-responsive" style="display: none;">
+                                    <table class="recent-players-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Người Chơi</th>
+                                                <th>Nhân Vật</th>
+                                                <th>Ngày Đăng Ký</th>
+                                                <th>Trạng Thái</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recent-players-tbody">
+                                            <!-- Render 5 người chơi bằng JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LƯỚI THÔNG TIN HỆ THỐNG XÁC THỰC THẬT -->
+                    <div class="dashboard-grid">
+                        <!-- THẺ 1: HỒ SƠ QUẢN TRỊ VIÊN -->
+                        <div class="dash-card">
+                            <div class="card-header">
+                                <span class="card-icon">🛡️</span>
+                                <h3>Thông Tin Quản Trị Viên</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-row">
+                                    <span class="info-label">Tên tài khoản:</span>
+                                    <span id="dash-username" class="info-value font-bold">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Firebase UID:</span>
+                                    <code id="dash-uid" class="info-code">---</code>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Nhân vật đại diện:</span>
+                                    <span id="dash-character" class="info-value text-capitalize">---</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Quyền hệ thống:</span>
+                                    <span class="status-pill pill-success">admin: true</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- THẺ 2: KIẾN TRÚC & HẠ TẦNG -->
+                        <div class="dash-card">
+                            <div class="card-header">
+                                <span class="card-icon">⚡</span>
+                                <h3>Hạ Tầng Backend</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-row">
+                                    <span class="info-label">Máy chủ:</span>
+                                    <span class="info-value">Node.js Express (Port 3000)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Cơ chế xác thực:</span>
+                                    <span class="info-value">Firebase Session Cookie (14 ngày)</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Cơ sở dữ liệu:</span>
+                                    <span class="info-value">Google Cloud Firestore</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Multiplayer Relay:</span>
+                                    <span class="info-value">Socket.io 2.3.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- THẺ 3: TIẾN ĐỘ ROADMAP -->
+                        <div class="dash-card">
+                            <div class="card-header">
+                                <span class="card-icon">📋</span>
+                                <h3>Tiến Độ Triển Khai Quản Trị</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="roadmap-list">
+                                    <li class="roadmap-item completed">
+                                        <span class="item-status">✓</span>
+                                        <span class="item-title">Phase A: Architecture Audit</span>
+                                    </li>
+                                    <li class="roadmap-item completed">
+                                        <span class="item-status">✓</span>
+                                        <span class="item-title">Phase B: Backend Authorization</span>
+                                    </li>
+                                    <li class="roadmap-item completed">
+                                        <span class="item-status">✓</span>
+                                        <span class="item-title">Phase C: Admin Dashboard UI</span>
+                                    </li>
+                                    <li class="roadmap-item active">
+                                        <span class="item-status">●</span>
+                                        <span class="item-title">Module: Players Management (Đang chạy)</span>
+                                    </li>
+                                    <li class="roadmap-item pending">
+                                        <span class="item-status">○</span>
+                                        <span class="item-title">Phase E: Pokémon & World Registry (Kế hoạch)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: QUẢN LÝ NGƯỜI CHƠI (PLAYERS MANAGEMENT - REAL DATA) -->
+                <section id="panel-players" class="content-panel">
+                    <div class="module-header-box">
+                        <div>
+                            <h2>Quản Lý Người Chơi (Players)</h2>
+                            <p class="module-subtitle">Dữ liệu thực từ Cloud Firestore. Hỗ trợ tìm kiếm theo username, phân trang và khóa/mở khóa tài khoản.</p>
+                        </div>
+                        <div class="module-stats-badge">
+                            <span>Tổng người chơi: </span>
+                            <strong id="players-total-count">0</strong>
+                        </div>
+                    </div>
+
+                    <!-- THANH ĐIỀU KHIỂN: TÌM KIẾM, LÀM MỚI, PHÂN TRANG LIMIT -->
+                    <div class="players-toolbar">
+                        <form id="players-search-form" class="search-form" novalidate>
+                            <div class="search-input-wrapper">
+                                <span class="search-icon" aria-hidden="true">🔍</span>
+                                <input 
+                                    type="text" 
+                                    id="players-search-input" 
+                                    class="search-input" 
+                                    placeholder="Tìm kiếm username người chơi..."
+                                    autocomplete="off"
+                                    maxlength="20"
+                                >
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Tìm Kiếm</button>
+                            <button type="button" id="btn-clear-search" class="btn btn-secondary btn-sm" style="display: none;">Xóa Lọc</button>
+                        </form>
+
+                        <div class="toolbar-right">
+                            <div class="limit-selector-group">
+                                <label for="players-limit-select" class="limit-label">Số dòng:</label>
+                                <select id="players-limit-select" class="limit-select">
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                            <button type="button" id="btn-refresh-players" class="btn btn-secondary btn-sm">
+                                <span>🔄 Làm Mới</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG DỮ LIỆU NGƯỜI CHƠI -->
+                    <div class="table-container">
+                        <!-- Loading spinner khi tải bảng -->
+                        <div id="players-table-loading" class="table-state-box active">
+                            <div class="table-spinner" aria-hidden="true"></div>
+                            <p>Đang truy vấn dữ liệu người chơi từ Firestore...</p>
+                        </div>
+
+                        <!-- Empty state khi không có bản ghi -->
+                        <div id="players-table-empty" class="table-state-box" style="display: none;">
+                            <div class="table-empty-icon">👥</div>
+                            <h3>Không tìm thấy người chơi nào</h3>
+                            <p id="players-empty-desc">Hệ thống chưa có người chơi đăng ký hoặc không có kết quả khớp với từ khóa tìm kiếm.</p>
+                        </div>
+
+                        <!-- Error state khi tải thất bại -->
+                        <div id="players-table-error" class="table-state-box" style="display: none;">
+                            <div class="table-error-icon">⚠️</div>
+                            <h3>Lỗi tải dữ liệu người chơi</h3>
+                            <p id="players-error-desc">Không thể tải danh sách người chơi từ server.</p>
+                            <button type="button" id="btn-retry-players" class="btn btn-secondary btn-sm" style="margin-top: 12px;">Thử Lại</button>
+                        </div>
+
+                        <!-- Bảng dữ liệu chính -->
+                        <table id="players-table" class="data-table" style="display: none;">
+                            <thead>
+                                <tr>
+                                    <th>UID</th>
+                                    <th>Tên Người Chơi</th>
+                                    <th>Nhân Vật</th>
+                                    <th>Vị Trí Hiện Tại</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Ngày Tạo</th>
+                                    <th class="text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="players-table-body">
+                                <!-- Dữ liệu dòng được render động bởi JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- THANH PHÂN TRANG -->
+                    <div id="players-pagination" class="pagination-bar" style="display: none;">
+                        <div class="pagination-info">
+                            <span id="players-pagination-info">Trang 1 / 1</span>
+                        </div>
+                        <div class="pagination-buttons">
+                            <button type="button" id="btn-prev-page" class="btn btn-secondary btn-sm" disabled>« Trang Trước</button>
+                            <span id="players-page-indicator" class="page-indicator">Trang 1</span>
+                            <button type="button" id="btn-next-page" class="btn btn-secondary btn-sm" disabled>Trang Sau »</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TAB 3: POKÉMON CATALOG -->
+                <section id="panel-pokemon" class="content-panel">
+                    <div class="module-header-box">
+                        <div>
+                            <h2>Pokémon Management</h2>
+                            <p class="module-subtitle">Metadata Pokémon được lưu dưới dạng override; ID, số Pokédex và asset giữ nguyên.</p>
+                        </div>
+                        <div class="module-stats-badge"><span>Tổng Pokémon: </span><strong id="pokemon-catalog-count">—</strong></div>
+                    </div>
+                    <p id="pokemon-catalog-status" class="module-subtitle" role="status">Chưa tải danh mục Pokémon.</p>
+                    <div class="table-container">
+                        <table id="pokemon-catalog-table" class="data-table" style="display: none;">
+                            <thead><tr><th>ID</th><th>Tên</th><th>Hệ</th><th>Thế hệ</th><th>Chiều cao</th><th>Cân nặng</th><th>HP</th><th>Attack</th><th>Defense</th><th>Speed</th><th>Special</th><th>Thao tác</th></tr></thead>
+                            <tbody id="pokemon-catalog-body"></tbody>
+                        </table>
+                    </div>
+                    <button type="button" id="btn-refresh-pokemon-catalog" class="btn btn-secondary btn-sm">🔄 Tải lại</button>
+                </section>
+
+                <!-- TAB 4: ITEM CATALOG (READ ONLY) -->
+                <section id="panel-items" class="content-panel">
+                    <div class="module-header-box">
+                        <div>
+                            <h2>Item Management</h2>
+                            <p class="module-subtitle">Catalog gốc giữ ID và gameplay; các trường tên, mô tả và Shop được lưu dưới dạng override.</p>
+                        </div>
+                        <div class="module-stats-badge"><span>Tổng vật phẩm: </span><strong id="item-catalog-count">—</strong></div>
+                    </div>
+                    <p id="item-catalog-status" class="module-subtitle" role="status">Chưa tải Item Catalog.</p>
+                    <div class="table-container">
+                        <table id="item-catalog-table" class="data-table" style="display: none;">
+                            <thead><tr><th>ID</th><th>Vật phẩm</th><th>Category</th><th>Mô tả</th><th>Effect</th><th>Giá mua</th><th>Giá bán</th><th>Thao tác</th></tr></thead>
+                            <tbody id="item-catalog-body"></tbody>
+                        </table>
+                    </div>
+                    <button type="button" id="btn-refresh-item-catalog" class="btn btn-secondary btn-sm">🔄 Tải lại</button>
+                </section>
+
+                <!-- TAB 5: BẢN ĐỒ (COMING SOON) -->
+                <section id="panel-maps" class="content-panel">
+                    <div class="coming-soon-card">
+                        <div class="soon-icon">🗺️</div>
+                        <h2>Quản Lý Bản Đồ (World & Portals)</h2>
+                        <p class="soon-desc">Module quản lý World Registry, liên kết cổng dịch chuyển (Portals) và NPC đối thoại trên các bản đồ.</p>
+                        <div class="soon-tag">SẮP RA MẮT — PHASE F</div>
+                    </div>
+                </section>
+
+                <!-- TAB 6: CÀI ĐẶT (COMING SOON) -->
+                <section id="panel-settings" class="content-panel">
+                    <div class="coming-soon-card">
+                        <div class="soon-icon">⚙️</div>
+                        <h2>Cài Đặt Hệ Thống (System Settings)</h2>
+                        <p class="soon-desc">Module cấu hình thông số máy chủ, tỷ lệ gặp quái và quản lý danh sách quản trị viên.</p>
+                        <div class="soon-tag">SẮP RA MẮT — PHASE G</div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL 1: CHI TIẾT HỒ SƠ NGƯỜI CHƠI -->
+    <div id="modal-player-detail" class="admin-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-player-title" style="display: none;">
+        <div class="admin-modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span id="modal-player-avatar" class="modal-avatar" aria-hidden="true">🔴</span>
+                    <div>
+                        <h3 id="modal-player-title" class="modal-title">Chi Tiết Người Chơi</h3>
+                        <p id="modal-player-subtitle" class="modal-subtitle">Thông tin hồ sơ lưu trữ Firestore</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-player-modal" class="modal-close-btn" aria-label="Đóng modal">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <span class="info-label">UID Người Chơi:</span>
+                        <code id="modal-player-uid" class="info-code full-code">---</code>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Tên Tài Khoản (Username):</span>
+                        <span id="modal-player-username" class="info-value font-bold">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Nhân Vật Đại Diện:</span>
+                        <span id="modal-player-character" class="info-value text-capitalize">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Trạng Thái Tài Khoản:</span>
+                        <span id="modal-player-status-badge" class="status-pill">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Bản Đồ Hiện Tại:</span>
+                        <span id="modal-player-map" class="info-value">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Tọa Độ & Hướng Nhìn:</span>
+                        <span id="modal-player-coords" class="info-value">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Ngày Đăng Ký:</span>
+                        <span id="modal-player-created" class="info-value">---</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="info-label">Cập Nhật Gần Nhất:</span>
+                        <span id="modal-player-updated" class="info-value">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="btn-modal-toggle-status" class="btn btn-sm">Khóa Tài Khoản</button>
+                <button type="button" id="btn-modal-close-action" class="btn btn-secondary btn-sm">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-pokemon" class="admin-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-edit-pokemon-title" style="display: none;">
+        <div class="admin-modal-card item-edit-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-avatar" aria-hidden="true">⚡</span>
+                    <div>
+                        <h3 id="modal-edit-pokemon-title" class="modal-title">Chỉnh sửa Pokémon</h3>
+                        <p id="pokemon-edit-id" class="modal-subtitle">ID và National Dex không thể thay đổi</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-pokemon-edit" class="modal-close-btn" aria-label="Đóng form">✕</button>
+            </div>
+            <form id="pokemon-edit-form">
+                <div class="modal-body item-edit-form pokemon-edit-form">
+                    <label class="item-edit-field">Tên hiển thị<input id="pokemon-edit-name" type="text" maxlength="80" required></label>
+                    <label class="item-edit-field">Types (phân cách bằng dấu phẩy)<input id="pokemon-edit-types" type="text" maxlength="30" required></label>
+                    <label class="item-edit-field">Generation<input id="pokemon-edit-generation" type="number" min="1" max="9" step="1" required></label>
+                    <label class="item-edit-field">Chiều cao (m)<input id="pokemon-edit-height" type="number" min="0.01" max="1000" step="0.01" required></label>
+                    <label class="item-edit-field">Cân nặng (kg)<input id="pokemon-edit-weight" type="number" min="0.01" max="100000" step="0.01" required></label>
+                    <label class="item-edit-field">Mô tả Pokédex<textarea id="pokemon-edit-dex-entry" maxlength="1000" rows="3"></textarea></label>
+                    <fieldset class="item-edit-shop pokemon-edit-stats">
+                        <legend>Base Stats</legend>
+                        <label class="item-edit-field">HP<input id="pokemon-edit-stat-hp" type="number" min="1" max="10000" step="1" required></label>
+                        <label class="item-edit-field">Attack<input id="pokemon-edit-stat-attack" type="number" min="1" max="10000" step="1" required></label>
+                        <label class="item-edit-field">Defense<input id="pokemon-edit-stat-defense" type="number" min="1" max="10000" step="1" required></label>
+                        <label class="item-edit-field">Speed<input id="pokemon-edit-stat-speed" type="number" min="1" max="10000" step="1" required></label>
+                        <label class="item-edit-field">Special<input id="pokemon-edit-stat-special" type="number" min="1" max="10000" step="1" required></label>
+                    </fieldset>
+                    <p id="pokemon-edit-status" class="module-subtitle" role="status"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="btn-save-pokemon-edit" class="btn btn-primary btn-sm">Lưu</button>
+                    <button type="button" id="btn-cancel-pokemon-edit" class="btn btn-secondary btn-sm">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-edit-item" class="admin-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-edit-item-title" style="display: none;">
+        <div class="admin-modal-card item-edit-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-avatar" aria-hidden="true">🎒</span>
+                    <div>
+                        <h3 id="modal-edit-item-title" class="modal-title">Chỉnh sửa vật phẩm</h3>
+                        <p id="modal-edit-item-id" class="modal-subtitle">ID không thể thay đổi</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-item-edit" class="modal-close-btn" aria-label="Đóng form">✕</button>
+            </div>
+            <form id="item-edit-form">
+                <div class="modal-body item-edit-form">
+                    <label class="item-edit-field">Tên hiển thị
+                        <input id="item-edit-name" type="text" maxlength="80" required>
+                    </label>
+                    <label class="item-edit-field">Mô tả
+                        <textarea id="item-edit-description" maxlength="500" rows="3" required></textarea>
+                    </label>
+                    <fieldset class="item-edit-shop">
+                        <legend>Shop</legend>
+                        <label><input id="item-edit-buyable" type="checkbox"> Có thể mua</label>
+                        <label class="item-edit-field">Giá mua
+                            <input id="item-edit-buy-price" type="number" min="1" step="1">
+                        </label>
+                        <label><input id="item-edit-sellable" type="checkbox"> Có thể bán</label>
+                        <label class="item-edit-field">Giá bán
+                            <input id="item-edit-sell-price" type="number" min="1" step="1">
+                        </label>
+                    </fieldset>
+                    <p id="item-edit-status" class="module-subtitle" role="status"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="btn-save-item-edit" class="btn btn-primary btn-sm">Lưu</button>
+                    <button type="button" id="btn-cancel-item-edit" class="btn btn-secondary btn-sm">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: XÁC NHẬN KHÓA / MỞ KHÓA TÀI KHOẢN -->
+    <div id="modal-confirm-status" class="admin-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" style="display: none;">
+        <div class="admin-modal-card confirm-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span id="confirm-icon" class="modal-avatar" aria-hidden="true">⚠️</span>
+                    <h3 id="confirm-title" class="modal-title">Xác Nhận Thao Tác</h3>
+                </div>
+                <button type="button" id="btn-close-confirm-modal" class="modal-close-btn" aria-label="Đóng">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <p id="confirm-message" class="confirm-text">Bạn có chắc chắn muốn thực hiện thao tác này?</p>
+                <p id="confirm-submessage" class="confirm-subtext">Hành động này sẽ cập nhật trực tiếp trên Firebase Auth và Firestore.</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="btn-execute-confirm" class="btn btn-primary btn-sm">Xác Nhận</button>
+                <button type="button" id="btn-cancel-confirm" class="btn btn-secondary btn-sm">Hủy Bỏ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST THÔNG BÁO PHẢN HỒI (TOAST ALERTS) -->
+    <div id="admin-toast-container" class="toast-container" aria-live="polite"></div>
+
+    <!-- Client Script -->
+    <script src="/admin/js/admin.js" defer></script>
+</body>
+</html>

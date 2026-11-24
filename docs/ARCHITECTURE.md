@@ -72,6 +72,9 @@ Poke-Engine/
 
 ## 3. LUỒNG KHỞI ĐỘNG HỆ THỐNG (SYSTEM BOOTSTRAP FLOW)
 
+### Pokémon Battle & Party Recovery `[Xác minh từ source]`
+Mini Battle chọn Pokémon đánh trước theo `stats.speed` (nếu bằng nhau thì ngẫu nhiên) và vẫn tính damage từ `stats.attack` / `stats.defense`. `PokemonPartyService` duy trì một timer mỗi giây cho Party: Pokémon còn HP hồi `max(1, floor(maxHp × 0.01))`; Pokémon faint lưu `faintedAt` và hồi sinh sau 120 giây với đúng lượng HP hồi ban đầu. Timer bỏ qua trạng thái `BATTLE`, lưu Party khi HP hoặc trạng thái faint/revive đổi, và timestamp revive được serialize cùng Pokémon để tiếp tục sau khi tải game.
+
 ### 3.1. Phía Server (Node.js) `[Xác minh từ source]`
 Khởi động trong `app.js`:
 1. `express()`: Khởi tạo ứng dụng web Express.
@@ -354,6 +357,15 @@ Hệ thống multiplayer hoạt động theo mô hình **Client-Authoritative Re
 
 ### 8.5. Mô hình Multiplayer Client-Authoritative thiếu xác thực thế giới `[Xác minh từ source]`
 * Máy chủ Socket.io chỉ đóng vai trò chuyển tiếp tọa độ do client tự tính toán. Server không sở hữu bản sao ma trận bản đồ để kiểm tra người chơi có đi xuyên tường hay dịch chuyển tức thời bất thường hay không.
+
+### 8.6. Admin đọc catalog Pokémon và vật phẩm `[Xác minh từ source]`
+* Trang `/admin` gọi `/api/admin/me` trước khi hiện dashboard. Các API `GET /api/admin/pokemon` và `GET /api/admin/items` nằm trong router có `requireAdmin`, xác minh Firebase session cookie, custom claim `admin: true` và tài khoản còn hoạt động.
+* Species gốc được đọc từ `public/res/pokemon/species.json`; Admin override metadata cho ID có sẵn trong Firestore `systemCatalogs/pokemonSpecies`. `PATCH /api/admin/pokemon/:speciesId` dùng `requireAdmin`, Origin và CSRF; game tải catalog đã merge qua endpoint session-authenticated trước khi khởi tạo hệ thống Pokémon.
+* Pokédex, Starter Selection, Pokémon Party và overworld dùng catalog đã tải. Khi khôi phục Party, metadata species được đồng bộ và chỉ số tính lại; level, EXP và HP hiện tại được giữ nguyên (HP chỉ bị giới hạn nếu vượt Max HP mới).
+* Vật phẩm dùng chung `PokeItemCatalog` trong `public/js/engine/ui/itemCatalog.js`. Admin có thể sửa metadata cho species/item hiện có; ID, `nationalDex`, asset và gameplay fields vẫn do nguồn gốc quản lý.
+* `itemCatalog.js` vẫn là nguồn gốc của item ID và gameplay. Firestore `systemCatalogs/itemCatalog` chỉ lưu override `name`, `description` và `shop`; Admin PATCH được bảo vệ bởi quyền Admin, Origin và CSRF.
+* Game tải metadata qua `GET /api/economy/item-catalog` trong `Game.load()` trước migration và `$release()`. Khi tải lỗi, boot dừng để không dùng giá cũ; giao dịch mua đọc giá hiện tại từ Firestore trong cùng transaction cập nhật Economy.
+* Party UI mở Pokémon Status từ từng Pokémon trong Party. Status chỉ đọc `PokemonInstance`; Base Stats và calculated stats được trình bày riêng, không làm thay đổi Party hoặc trạng thái Pokémon.
 
 ---
 

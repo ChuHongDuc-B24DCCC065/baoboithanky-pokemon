@@ -13,8 +13,10 @@
         // Prototype player HP (reactive to healing items in inventory)
         this.maxHp = 100;
         this.currentHp = 100;
+        this._removeInventoryListener = null;
 
         this.init();
+        this.bindInventoryBalance();
     };
 
     ModernHUD.prototype.init = function () {
@@ -70,6 +72,14 @@
         const characterSkin = (this.game.savedData && this.game.savedData.character)
             ? this.game.savedData.character
             : "red";
+        const characterLevel = this.game.savedData && Number.isInteger(this.game.savedData.characterLevel)
+            ? this.game.savedData.characterLevel : 1;
+        const characterExp = this.game.savedData && Number.isFinite(this.game.savedData.characterExp)
+            ? this.game.savedData.characterExp : 0;
+        const expToNextLevel = this.game.getCharacterExpToNextLevel
+            ? this.game.getCharacterExpToNextLevel(characterLevel) : characterLevel * 50;
+        const characterExpPercent = expToNextLevel > 0
+            ? Math.max(0, Math.min(100, (characterExp / expToNextLevel) * 100)) : 100;
 
         const panel = document.createElement("div");
         panel.className = "rpg-status-panel";
@@ -82,7 +92,7 @@
             <div class="rpg-status-info">
                 <div class="rpg-status-header">
                     <span class="rpg-player-name" id="rpg-status-username">${username}</span>
-                    <span class="rpg-player-level" title="Cấp độ nhân vật (Bản thử nghiệm / Chưa hỗ trợ level backend)">Lv. 1</span>
+                    <span class="rpg-player-level" id="rpg-player-level">Lv. ${characterLevel}</span>
                 </div>
                 <div class="rpg-bar-container">
                     <span class="rpg-bar-label">HP</span>
@@ -94,14 +104,13 @@
                 <div class="rpg-bar-container">
                     <span class="rpg-bar-label">EXP</span>
                     <div class="rpg-bar-track">
-                        <div class="rpg-bar-fill exp-bar" style="width: 25%;"></div>
+                        <div id="rpg-player-exp-fill" class="rpg-bar-fill exp-bar" style="width: ${characterExpPercent}%;"></div>
                     </div>
-                    <span class="rpg-bar-text">25/100</span>
+                    <span id="rpg-player-exp-text" class="rpg-bar-text">${expToNextLevel > 0 ? `${characterExp}/${expToNextLevel}` : "MAX"}</span>
                 </div>
-                <div class="rpg-currency-badge" title="Tiền tệ (Hệ thống ví tiền chưa được triển khai ở backend)">
+                <div class="rpg-currency-badge" title="Số dư hiện tại">
                     <span class="currency-icon">🪙</span>
-                    <span>₽ 0</span>
-                    <small style="color: #94a3b8; font-size: 8px;">(Thử nghiệm)</small>
+                    <span id="rpg-currency-balance">₽ 0</span>
                 </div>
             </div>
         `;
@@ -112,6 +121,38 @@
         });
 
         this.$root.appendChild(panel);
+    };
+
+    ModernHUD.prototype.updateBalanceDisplay = function () {
+        const balanceEl = document.getElementById("rpg-currency-balance");
+        if (!balanceEl) return;
+        const balance = this.inventoryService && Number.isSafeInteger(this.inventoryService.balance) && this.inventoryService.balance >= 0
+            ? this.inventoryService.balance
+            : 0;
+        balanceEl.textContent = "₽ " + balance.toLocaleString("vi-VN");
+    };
+
+    ModernHUD.prototype.bindInventoryBalance = function () {
+        if (this._removeInventoryListener) this._removeInventoryListener();
+        this.updateBalanceDisplay();
+        if (this.inventoryService && typeof this.inventoryService.onChange === "function") {
+            this._removeInventoryListener = this.inventoryService.onChange(() => this.updateBalanceDisplay());
+        }
+    };
+
+    ModernHUD.prototype.updateCharacterProgress = function () {
+        const saved = this.game && this.game.savedData ? this.game.savedData : {};
+        const level = Number.isInteger(saved.characterLevel) ? saved.characterLevel : 1;
+        const exp = Number.isFinite(saved.characterExp) ? saved.characterExp : 0;
+        const required = this.game && typeof this.game.getCharacterExpToNextLevel === "function"
+            ? this.game.getCharacterExpToNextLevel(level) : level * 50;
+        const percent = required > 0 ? Math.max(0, Math.min(100, (exp / required) * 100)) : 100;
+        const levelEl = document.getElementById("rpg-player-level");
+        const fillEl = document.getElementById("rpg-player-exp-fill");
+        const textEl = document.getElementById("rpg-player-exp-text");
+        if (levelEl) levelEl.textContent = "Lv. " + level;
+        if (fillEl) fillEl.style.width = percent + "%";
+        if (textEl) textEl.textContent = required > 0 ? exp + "/" + required : "MAX";
     };
 
     /**
@@ -125,6 +166,7 @@
         const buttons = [
             { id: "character", icon: "👤", label: "Nhân vật" },
             { id: "inventory", icon: "🎒", label: "Túi đồ" },
+            { id: "shop", icon: "🛒", label: "Shop" },
             { id: "equipment", icon: "⚔️", label: "Trang bị" },
             { id: "pokemon",   icon: "⚡", label: "Pokémon" },
             { id: "map",       icon: "🗺️", label: "Bản đồ" },

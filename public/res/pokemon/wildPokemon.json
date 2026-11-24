@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "defaultResetSeconds": 30,
+  "maps": {
+    "test": {
+      "maxActive": 3,
+      "initialSpawns": [
+        { "id": "ow-test-rattata", "speciesId": "019", "position": { "x": 29, "y": 23 }, "facing": "down" },
+        { "id": "ow-test-pidgey", "speciesId": "016", "position": { "x": 33, "y": 26 }, "facing": "left" },
+        { "id": "ow-test-caterpie", "speciesId": "010", "position": { "x": 41, "y": 26 }, "facing": "down" }
+      ],
+      "species": [
+        { "speciesId": "019", "weight": 1, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "016", "weight": 1, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "010", "weight": 1, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    },
+    "forest_route": {
+      "maxActive": 3,
+      "initialSpawns": [
+        { "id": "ow-route-caterpie", "speciesId": "010", "position": { "x": 6, "y": 3 }, "facing": "down" },
+        { "id": "ow-route-weedle", "speciesId": "013", "position": { "x": 13, "y": 5 }, "facing": "left" },
+        { "id": "ow-route-rattata", "speciesId": "019", "position": { "x": 5, "y": 13 }, "facing": "right" }
+      ],
+      "species": [
+        { "speciesId": "010", "weight": 1, "levelRange": { "min": 1, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "013", "weight": 1, "levelRange": { "min": 1, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "019", "weight": 1, "levelRange": { "min": 1, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    },
+    "forest_path": {
+      "maxActive": 2,
+      "initialSpawns": [
+        { "id": "ow-path-oddish", "speciesId": "043", "position": { "x": 20, "y": 12 }, "facing": "down" },
+        { "id": "ow-path-pidgey", "speciesId": "016", "position": { "x": 16, "y": 18 }, "facing": "up" }
+      ],
+      "species": [
+        { "speciesId": "043", "weight": 1, "levelRange": { "min": 1, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "016", "weight": 1, "levelRange": { "min": 1, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    },
+    "village_pine": {
+      "maxActive": 3,
+      "initialSpawns": [
+        { "id": "ow-village-pine-pidgey", "speciesId": "016", "position": { "x": 9, "y": 19 }, "facing": "down" },
+        { "id": "ow-village-pine-rattata", "speciesId": "019", "position": { "x": 25, "y": 20 }, "facing": "left" },
+        { "id": "ow-village-pine-oddish", "speciesId": "043", "position": { "x": 12, "y": 20 }, "facing": "right" }
+      ],
+      "species": [
+        { "speciesId": "016", "weight": 2, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "019", "weight": 1, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "043", "weight": 1, "levelRange": { "min": 1, "max": 3 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    },
+    "lake_route": {
+      "maxActive": 3,
+      "initialSpawns": [
+        { "id": "ow-lake-route-squirtle", "speciesId": "007", "position": { "x": 5, "y": 12 }, "facing": "right" },
+        { "id": "ow-lake-route-pidgey", "speciesId": "016", "position": { "x": 34, "y": 12 }, "facing": "left" },
+        { "id": "ow-lake-route-oddish", "speciesId": "043", "position": { "x": 7, "y": 26 }, "facing": "up" }
+      ],
+      "species": [
+        { "speciesId": "007", "weight": 2, "levelRange": { "min": 2, "max": 5 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "016", "weight": 1, "levelRange": { "min": 2, "max": 5 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "043", "weight": 1, "levelRange": { "min": 2, "max": 5 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    },
+    "cave_entrance": {
+      "maxActive": 3,
+      "initialSpawns": [
+        { "id": "ow-cave-entrance-sandshrew", "speciesId": "027", "position": { "x": 7, "y": 17 }, "facing": "down" },
+        { "id": "ow-cave-entrance-zubat", "speciesId": "041", "position": { "x": 32, "y": 17 }, "facing": "left" },
+        { "id": "ow-cave-entrance-diglett", "speciesId": "050", "position": { "x": 8, "y": 22 }, "facing": "right" }
+      ],
+      "species": [
+        { "speciesId": "027", "weight": 1, "levelRange": { "min": 3, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "041", "weight": 2, "levelRange": { "min": 3, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } },
+        { "speciesId": "050", "weight": 1, "levelRange": { "min": 3, "max": 6 }, "highLevelChancePercent": 10, "highLevelRange": { "min": 7, "max": 10 } }
+      ]
+    }
+  }
+}

@@ -30,7 +30,18 @@ const Game = function () {
 
 Game.prototype.load = function () {
     const self = this;
+    if (!Array.isArray(this.speciesCatalog)) this.speciesCatalog = [];
     return this.fetchSavedData()
+        .then(function () {
+            if (!self.speciesCatalogPromise) self.speciesCatalogPromise = self.loadSpeciesCatalog();
+            return Promise.all([self.loadItemCatalog(), self.speciesCatalogPromise]);
+        })
+        .then(function () {
+            return self.migrateLegacyInventory();
+        })
+        .then(function () {
+            return self.migrateLegacyParty();
+        })
         .then(function () {
             return self.fetchMapData();
         });
@@ -257,9 +268,28 @@ Game.prototype.openDialogue = function (npc) {
         if (newFacing) npc.setFacing(newFacing);
     }
 
-    const lines = (npc.dialogue && Array.isArray(npc.dialogue) && npc.dialogue.length > 0)
-        ? npc.dialogue
+    let lines = (npc.dialogue && Array.isArray(npc.dialogue) && npc.dialogue.length > 0)
+        ? [...npc.dialogue]
         : ["..."];
+
+    const hasChosenStarter = (this.pokemonPartyService && typeof this.pokemonPartyService.isStarterChosen === "function")
+        ? this.pokemonPartyService.isStarterChosen()
+        : (this.pokemonPartyService ? this.pokemonPartyService.hasStarter() : false);
+
+    if (npc.id === "guide-leaf" && !hasChosenStarter) {
+        lines = [
+            "Chào mừng bạn đến với thế giới Pokémon!",
+            "Bạn vẫn chưa có người bạn đồng hành nào đúng không?",
+            "Hãy chọn 1 trong 3 Pokémon khởi đầu để bắt đầu cuộc hành trình nhé!"
+        ];
+    } else if (npc.id === "guide-leaf" && hasChosenStarter) {
+        const lead = this.pokemonPartyService ? this.pokemonPartyService.getLeadPokemon() : null;
+        lines = [
+            `Chào bạn! Bạn và ${lead ? lead.name : "Pokémon của bạn"} trông rất hòa hợp đấy!`,
+            "Thị trấn này rất yên bình. Hãy dùng các phím WASD để dạo quanh và phím X để xem Pokédex nhé!",
+            "Chúc bạn có một chuyến hành trình tuyệt vời!"
+        ];
+    }
     this.activeDialogue = { npc: npc, lines: lines, index: 0 };
 
     // Đảm bảo $dialogueBox có trước khi append #dialogue-name
@@ -308,6 +338,11 @@ Game.prototype.advanceDialogue = function () {
 
 // Đóng khung thoại và trả quyền điều khiển cho người chơi
 Game.prototype.closeDialogue = function () {
+    const hasChosenStarter = (this.pokemonPartyService && typeof this.pokemonPartyService.isStarterChosen === "function")
+        ? this.pokemonPartyService.isStarterChosen()
+        : (this.pokemonPartyService ? this.pokemonPartyService.hasStarter() : false);
+    const wasStarterPrompt = this.activeDialogue && this.activeDialogue.npc && this.activeDialogue.npc.id === "guide-leaf" && !hasChosenStarter;
+
     this.state = "NORMAL";
     this.activeDialogue = null;
 
@@ -325,6 +360,168 @@ Game.prototype.closeDialogue = function () {
     if (this.key && this.key._pressed) {
         this.key._pressed = {};
     }
+
+    if (wasStarterPrompt && this.modalManager) {
+        setTimeout(() => {
+            this.modalManager.openModal("starter_select");
+        }, 50);
+    }
+};
+
+// Nạp danh mục species thật để dựng Pokémon hoang dã trên overworld.
+Game.prototype.loadSpeciesCatalog = function () {
+    const self = this;
+    const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(function () { controller.abort(); }, 10000) : null;
+    return fetch("/api/economy/pokemon-catalog", {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+        credentials: "same-origin",
+        signal: controller ? controller.signal : undefined
+    })
+        .then(function (res) {
+            return res.json().catch(function () { return null; }).then(function (payload) {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (res.status === 401) {
+                    window.location.href = "/login";
+                    throw { type: "POKEMON_CATALOG_LOAD_ERROR", status: 401, userMessage: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại để tải dữ liệu Pokémon mới nhất." };
+                }
+                if (!res.ok || !payload || payload.success !== true || !payload.data || !Array.isArray(payload.data.pokemon)) {
+                    throw { type: "POKEMON_CATALOG_LOAD_ERROR", status: res.status, userMessage: "Không thể tải dữ liệu Pokémon mới nhất. Game chưa được mở để tránh dùng metadata cũ. Vui lòng thử tải lại." };
+                }
+                return payload.data.pokemon;
+            });
+        })
+        .then(function (data) {
+            self.speciesCatalog = data;
+            return data;
+        })
+        .catch(function (error) {
+            if (timeoutId) clearTimeout(timeoutId);
+            if (error && error.type === "POKEMON_CATALOG_LOAD_ERROR") throw error;
+            const timedOut = (error && error.name === "AbortError") || (controller && controller.signal.aborted);
+            throw {
+                type: "POKEMON_CATALOG_LOAD_ERROR",
+                status: 0,
+                technicalDetail: timedOut ? "Pokémon catalog request timed out" : (error && error.message ? error.message : "Network error"),
+                userMessage: timedOut
+                    ? "Tải dữ liệu Pokémon quá thời gian chờ. Game chưa được mở; vui lòng thử lại."
+                    : "Không thể kết nối để tải dữ liệu Pokémon. Game chưa được mở; vui lòng kiểm tra mạng rồi thử lại."
+            };
+        });
+};
+
+Game.CHARACTER_MAX_LEVEL = 100;
+Game.CHARACTER_EXP_PER_LEVEL = 50;
+
+Game.prototype.getCharacterExpToNextLevel = function (level) {
+    const currentLevel = Number.isInteger(level)
+        ? level
+        : (this.savedData && Number.isInteger(this.savedData.characterLevel) ? this.savedData.characterLevel : 1);
+    return currentLevel >= Game.CHARACTER_MAX_LEVEL ? 0 : currentLevel * Game.CHARACTER_EXP_PER_LEVEL;
+};
+
+Game.prototype.getCharacterProgressStorageKey = function (userId) {
+    const ownerId = userId || (this.savedData && this.savedData.userId) || "guest";
+    return "poke_proto_" + ownerId + "_character_progress";
+};
+
+Game.prototype.loadCharacterProgress = function (userId) {
+    if (!this.savedData) this.savedData = {};
+    this.savedData.userId = userId || this.savedData.userId || null;
+    this.savedData.characterLevel = 1;
+    this.savedData.characterExp = 0;
+
+    if (typeof localStorage !== "undefined") {
+        try {
+            const raw = localStorage.getItem(this.getCharacterProgressStorageKey(userId));
+            if (raw) {
+                const progress = JSON.parse(raw);
+                if (progress && Number.isFinite(progress.level)) {
+                    this.savedData.characterLevel = Math.min(Game.CHARACTER_MAX_LEVEL, Math.max(1, Math.floor(progress.level)));
+                }
+                if (progress && Number.isFinite(progress.exp) && progress.exp >= 0) {
+                    this.savedData.characterExp = Math.floor(progress.exp);
+                }
+            }
+        } catch (err) {
+            console.warn("[Game] Không thể đọc tiến trình cấp nhân vật:", err && (err.message || err));
+        }
+    }
+
+    if (this.savedData.characterLevel >= Game.CHARACTER_MAX_LEVEL) this.savedData.characterExp = 0;
+    if (this.hud && typeof this.hud.updateCharacterProgress === "function") {
+        this.hud.updateCharacterProgress();
+    }
+    return {
+        level: this.savedData.characterLevel,
+        exp: this.savedData.characterExp
+    };
+};
+
+Game.prototype.saveCharacterProgress = function () {
+    if (!this.savedData) return false;
+    const progress = {
+        level: Math.min(Game.CHARACTER_MAX_LEVEL, Math.max(1, Math.floor(this.savedData.characterLevel || 1))),
+        exp: Math.max(0, Math.floor(this.savedData.characterExp || 0))
+    };
+    if (progress.level >= Game.CHARACTER_MAX_LEVEL) progress.exp = 0;
+    this.savedData.characterLevel = progress.level;
+    this.savedData.characterExp = progress.exp;
+
+    if (typeof localStorage === "undefined") return false;
+    try {
+        localStorage.setItem(this.getCharacterProgressStorageKey(), JSON.stringify(progress));
+    } catch (err) {
+        console.warn("[Game] Không thể lưu tiến trình cấp nhân vật:", err && (err.message || err));
+        return false;
+    }
+    return true;
+};
+
+Game.prototype.gainCharacterExperience = function (amount) {
+    if (!this.savedData) return null;
+    let level = Number.isInteger(this.savedData.characterLevel)
+        ? Math.min(Game.CHARACTER_MAX_LEVEL, Math.max(1, this.savedData.characterLevel)) : 1;
+    let exp = Number.isFinite(this.savedData.characterExp) && this.savedData.characterExp >= 0
+        ? Math.floor(this.savedData.characterExp) : 0;
+    const previousLevel = level;
+    const gained = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
+    let expGained = gained;
+
+    if (level >= Game.CHARACTER_MAX_LEVEL) {
+        exp = 0;
+        expGained = 0;
+    } else {
+        exp += gained;
+        while (level < Game.CHARACTER_MAX_LEVEL && exp >= level * Game.CHARACTER_EXP_PER_LEVEL) {
+            exp -= level * Game.CHARACTER_EXP_PER_LEVEL;
+            level++;
+        }
+        if (level >= Game.CHARACTER_MAX_LEVEL) exp = 0;
+    }
+
+    this.savedData.characterLevel = level;
+    this.savedData.characterExp = exp;
+    if (expGained > 0) this.saveCharacterProgress();
+    if (this.hud && typeof this.hud.updateCharacterProgress === "function") {
+        this.hud.updateCharacterProgress();
+    }
+    return {
+        expGained: expGained,
+        previousLevel: previousLevel,
+        newLevel: level,
+        levelsGained: level - previousLevel,
+        exp: exp,
+        atLevelCap: level >= Game.CHARACTER_MAX_LEVEL
+    };
+};
+
+// Xử lý sự kiện sau khi người chơi bước đi hoàn chỉnh một ô tile (Wild Encounter Hook)
+Game.prototype.onPlayerStep = function (pos) {
+    // Random step encounters are disabled: wild Pokémon now come only from the
+    // per-map configuration and are visible/interactable on the overworld.
+    void pos;
 };
 
 // Xử lý khi nhấn phím tương tác Space hoặc Enter
@@ -459,13 +656,35 @@ Game.prototype.$release = function () {
 
     // Khởi tạo hệ thống Modern RPG UI (HUD, Inventory, Equipment, Character, Pokémon)
     if (typeof PokeInventoryService !== "undefined" && typeof PokeModalManager !== "undefined") {
-        this.inventoryService = new PokeInventoryService(this.savedData ? this.savedData.userId : "guest");
+        this.inventoryService = new PokeInventoryService(
+            this.savedData ? this.savedData.userId : null,
+            this.economySnapshot
+        );
         this.modalManager = new PokeModalManager(this);
         this.hud = new PokeModernHUD(this, this.modalManager, this.inventoryService);
         this.inventoryUI = new PokeInventoryUI(this.modalManager, this.inventoryService, this.hud);
+        this.shopUI = (typeof PokeShopUI !== "undefined")
+            ? new PokeShopUI(this.modalManager, this.inventoryService)
+            : null;
+        this.itemEncyclopediaUI = (typeof PokeItemEncyclopediaUI !== "undefined")
+            ? new PokeItemEncyclopediaUI(this.modalManager, this.inventoryService)
+            : null;
         this.equipmentUI = new PokeEquipmentUI(this.modalManager, this.inventoryService);
         this.characterUI = new PokeCharacterUI(this, this.modalManager, this.inventoryService);
+        const userId = this.savedData ? this.savedData.userId : "guest";
+        this.pokedexProgressService = (typeof PokePokedexProgressService !== "undefined") ? new PokePokedexProgressService(userId) : null;
+        this.pokemonPartyService = (typeof PokePokemonPartyService !== "undefined")
+            ? new PokePokemonPartyService(this, this.pokedexProgressService, userId, this.speciesCatalog, this.partySnapshot)
+            : null;
         this.pokemonUI = new PokePokemonUI(this, this.modalManager);
+        this.pokedexUI = new PokePokedexUI(this, this.modalManager, this.pokedexProgressService);
+        this.starterSelectionUI = (typeof PokeStarterSelectionUI !== "undefined") ? new PokeStarterSelectionUI(this, this.modalManager, this.pokemonPartyService, this.pokedexProgressService) : null;
+        this.miniBattleUI = (typeof PokeMiniBattleUI !== "undefined") ? new PokeMiniBattleUI(this, this.pokemonPartyService, this.pokedexProgressService, this.inventoryService) : null;
+        this.encounterCooldown = 5;
+        if (!Array.isArray(this.speciesCatalog)) this.speciesCatalog = [];
+        if (!this.speciesCatalogPromise) {
+            this.speciesCatalogPromise = this.loadSpeciesCatalog();
+        }
     }
 
     setInterval(() => this.update(), 1000 / 30);

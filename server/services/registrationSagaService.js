@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { FieldValue, getFirestore } = require("../config/firebase");
+const { createInitialEconomyData, getEconomyDocumentRef } = require("./economyService");
 const {
     normalizeUsername,
     getSyntheticEmail,
@@ -363,6 +364,7 @@ async function executeRegistration({ username, password, character = "red", idem
     // BƯỚC 5: TRANSACTION FIRESTORE - KÍCH HOẠT HỒ SƠ VÀ HOÀN TẤT (ACTIVE)
     // =========================================================================
     const userRef = db.collection("users").doc(userRecord.uid);
+    const economyRef = getEconomyDocumentRef(db, userRecord.uid);
     try {
         await db.runTransaction(async (transaction) => {
             const opDoc = await transaction.get(opRef);
@@ -393,6 +395,9 @@ async function executeRegistration({ username, password, character = "red", idem
                 createdAt: FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp()
             });
+
+            // Khởi tạo economy cùng profile trong transaction đăng ký.
+            transaction.create(economyRef, createInitialEconomyData());
 
             // Chốt quyền sở hữu username vĩnh viễn (xóa toàn bộ trường lease tạm)
             transaction.set(usernameRef, {

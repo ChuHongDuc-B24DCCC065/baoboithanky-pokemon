@@ -178,6 +178,9 @@ Game.prototype.applyPreparedMap = function (prepared) {
     this.mapData.height = prepared.height;
     this.setupNpcs(prepared.npcs);
     this.setupPortals(prepared.transitions);
+    if (typeof this.setupOverworldPokemon === "function") {
+        this.setupOverworldPokemon(prepared);
+    }
     this.applyMap();
 };
 

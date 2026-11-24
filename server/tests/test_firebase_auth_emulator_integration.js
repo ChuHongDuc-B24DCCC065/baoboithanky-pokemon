@@ -31,6 +31,7 @@ const csrfMiddleware = require("../middleware/csrfMiddleware");
 const authMiddleware = require("../middleware/authMiddleware");
 const activeSockets = require("../socket/activeSockets");
 const authController = require("../controllers/authController");
+const economyController = require("../controllers/economyController");
 
 // Helper tạo Mock Response cho Express controller / middleware
 function createMockRes() {
@@ -136,6 +137,21 @@ async function runIntegrationSuite() {
             assert.strictEqual(userData.username, testUsername);
             assert.strictEqual(userData.character, testCharacter);
             assert.strictEqual(userData.isActive, true, "Hồ sơ người chơi phải ở trạng thái isActive=true");
+
+            const economyDocSnap = await db.collection("users").doc(registeredUid)
+                .collection("gameState").doc("economy").get();
+            assert(economyDocSnap.exists, "Registration phải khởi tạo users/{uid}/gameState/economy");
+            const economyData = economyDocSnap.data() || {};
+            assert.strictEqual(economyData.schemaVersion, 1);
+            assert.strictEqual(economyData.balance, 0);
+            assert.deepStrictEqual(economyData.items, {});
+            assert.deepStrictEqual(economyData.equipment, {
+                armor: null,
+                shoes: null,
+                accessory: null,
+                held_item: null
+            });
+            assert.strictEqual(economyData.migration.status, "pending");
 
             // 3. Kiểm tra Firestore: collection usernames/{username}
             const usernameDocSnap = await db.collection("usernames").doc(testUsername).get();
@@ -278,6 +294,15 @@ async function runIntegrationSuite() {
             assert(authMiddlewarePassed, "requireAuth middleware phải chấp thuận session cookie hợp lệ");
             assert(mockReq.user && mockReq.user.uid === registeredUid, "req.user phải được gắn UID chính xác");
             assert.strictEqual(mockReq.user.username, testUsername);
+
+            mockReq.originalUrl = "/api/economy?uid=attacker-controlled";
+            mockReq.query = { uid: "attacker-controlled" };
+            mockReq.body = { uid: "attacker-controlled", balance: 999999 };
+            const economySnapshotRes = createMockRes();
+            await economyController.getSnapshot(mockReq, economySnapshotRes);
+            assert.strictEqual(economySnapshotRes._status, 200);
+            assert.strictEqual(economySnapshotRes._json.data.balance, 0);
+            assert.deepStrictEqual(economySnapshotRes._json.data.items, {});
 
             // C.5. Kiểm thử Endpoint GET /api/auth/me với Session Cookie
             const mockMeReq = {
@@ -499,6 +524,7 @@ async function runIntegrationSuite() {
         // 2. Dọn dẹp Firestore users/{uid}
         for (const uid of cleanupRegistry.uids) {
             try {
+                await db.collection("users").doc(uid).collection("gameState").doc("economy").delete();
                 await db.collection("users").doc(uid).delete();
                 cleanedFirestoreCount++;
             } catch {}

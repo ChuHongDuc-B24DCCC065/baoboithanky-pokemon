@@ -10,6 +10,9 @@ const
     io = require("socket.io")(http);
 
 const authRoutes = require("./server/routes/authRoutes");
+const adminRoutes = require("./server/routes/adminRoutes");
+const economyRoutes = require("./server/routes/economyRoutes");
+const pokemonPartyRoutes = require("./server/routes/pokemonPartyRoutes");
 const { requireAuth, requireGuest } = require("./server/middleware/authMiddleware");
 const { ensureCsrfCookie, extractCookie } = require("./server/middleware/csrfMiddleware");
 const { registerSocket, unregisterSocket } = require("./server/socket/activeSockets");
@@ -217,9 +220,17 @@ const startServer = async () => {
 
         // 5. Gắn Auth API routes
         app.use("/api/auth", authRoutes);
+        app.use("/api/admin", adminRoutes);
+        app.use("/api/economy", economyRoutes);
+        app.use("/api/party", pokemonPartyRoutes);
 
         // 6. Protected Page Routes (Bảo vệ màn hình Game)
         const publicDirectory = path.join(__dirname, "public");
+
+        // Admin Dashboard Page Route
+        app.get(["/admin", "/admin/"], (req, res) => {
+            res.sendFile(path.join(publicDirectory, "admin", "index.html"));
+        });
 
         app.get("/", requireAuth, (req, res) => {
             res.sendFile(path.join(publicDirectory, "index.html"));

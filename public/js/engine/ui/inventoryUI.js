@@ -9,6 +9,31 @@
         ? require("./itemCatalog")
         : (global.PokeItemCatalog || {});
 
+    const createItemIconElement = function (item, className) {
+        if (!item || !item.sprite) {
+            const fallback = document.createElement("span");
+            fallback.className = className;
+            fallback.textContent = item && item.icon ? item.icon : "📦";
+            return fallback;
+        }
+
+        const image = document.createElement("img");
+        image.className = className;
+        image.src = item.sprite;
+        image.alt = item.name || "";
+        image.width = 32;
+        image.height = 32;
+        image.style.objectFit = "contain";
+        image.style.imageRendering = "pixelated";
+        image.addEventListener("error", () => {
+            const fallback = document.createElement("span");
+            fallback.className = className;
+            fallback.textContent = item.icon || "📦";
+            image.replaceWith(fallback);
+        }, { once: true });
+        return image;
+    };
+
     const InventoryUI = function (modalManager, inventoryService, hudInstance) {
         this.modalManager = modalManager;
         this.inventoryService = inventoryService;
@@ -50,6 +75,7 @@
                     <span class="rpg-modal-title-icon">🎒</span>
                     <span>Túi Đồ Trainer (Inventory)</span>
                 </div>
+                <button type="button" id="rpg-btn-open-item-encyclopedia" class="rpg-btn-primary" title="Tra cứu tất cả vật phẩm">📖 Bách khoa vật phẩm</button>
                 <button type="button" class="rpg-modal-close-btn" title="Đóng (ESC)">✕</button>
             </div>
             <div class="rpg-modal-body">
@@ -87,6 +113,12 @@
 
         // Bind Close Button
         container.querySelector(".rpg-modal-close-btn").addEventListener("click", onClose);
+        const encyclopediaBtn = container.querySelector("#rpg-btn-open-item-encyclopedia");
+        if (encyclopediaBtn) {
+            encyclopediaBtn.addEventListener("click", () => {
+                this.modalManager.openModal("item_encyclopedia");
+            });
+        }
 
         // Bind Tab Clicks
         const tabBtns = container.querySelectorAll(".rpg-tab-btn");
@@ -153,9 +185,9 @@
 
             card.innerHTML = `
                 <span class="rpg-item-qty">x${item.quantity}</span>
-                <span class="rpg-item-icon">${item.icon || "📦"}</span>
                 <span class="rpg-item-name" title="${item.name}">${item.name}</span>
             `;
+            card.insertBefore(createItemIconElement(item, "rpg-item-icon"), card.querySelector(".rpg-item-name"));
 
             card.addEventListener("click", () => {
                 this.selectedItemId = item.id;
@@ -196,11 +228,17 @@
 
         const isUsable = itemDef.isUsable === true;
         const categoryName = Catalog.CATEGORY_NAMES[itemDef.category] || itemDef.category;
+        const game = this.hud && this.hud.game;
+        const partyService = game && game.pokemonPartyService;
+        const activePokemon = partyService && typeof partyService.getActivePokemon === "function"
+            ? partyService.getActivePokemon()
+            : null;
+        const targetsPokemonHp = itemDef.effect && itemDef.effect.type === "HEAL_HP";
 
         detailEl.innerHTML = `
             <div>
                 <div class="rpg-detail-header">
-                    <span class="rpg-detail-icon">${itemDef.icon || "📦"}</span>
+                    <span class="rpg-detail-icon"></span>
                     <div>
                         <div class="rpg-detail-title">${itemDef.name}</div>
                         <div class="rpg-detail-category">${categoryName}</div>
@@ -210,6 +248,14 @@
                     <strong>Số lượng sở hữu:</strong> x${qty}
                 </div>
                 <div class="rpg-detail-desc">${itemDef.description}</div>
+                ${targetsPokemonHp ? `
+                    <div class="rpg-detail-meta" style="margin-top: 8px;">
+                        <strong>Pokémon mục tiêu:</strong>
+                        ${activePokemon
+                            ? `${activePokemon.name} — HP ${activePokemon.currentHp}/${activePokemon.maxHp}`
+                            : "Không có Pokémon đủ điều kiện đang xuất chiến"}
+                    </div>
+                ` : ""}
                 ${!isUsable && itemDef.unusableReason ? `
                     <div style="font-size: 10px; color: #ff6b6b; margin-bottom: 8px;">
                         ⚠️ ${itemDef.unusableReason}
@@ -228,6 +274,8 @@
             </div>
         `;
 
+        detailEl.querySelector(".rpg-detail-icon").appendChild(createItemIconElement(itemDef, "rpg-detail-icon-image"));
+
         // Switch to equipment modal if clicked
         const goEquipBtn = detailEl.querySelector("#rpg-btn-go-equipment");
         if (goEquipBtn) {
@@ -239,24 +287,41 @@
         // Handle Item Usage with Concurrency Lock (Anti-spam / Anti-double-click)
         const useBtn = detailEl.querySelector("#rpg-btn-use-item");
         if (useBtn && isUsable) {
-            useBtn.addEventListener("click", () => {
+            useBtn.addEventListener("click", async () => {
                 if (this._isUsingItem) return;
                 this._isUsingItem = true;
                 useBtn.disabled = true;
 
                 const targetContext = {
-                    healHp: (amount) => {
-                        return this.hud ? this.hud.healHp(amount) : amount;
+                    canHealPokemon: () => {
+                        const game = this.hud && this.hud.game;
+                        const partyService = game && game.pokemonPartyService;
+                        const pokemon = partyService && partyService.getActivePokemon();
+                        return Boolean(pokemon && (game.state === "NORMAL" || game.state === "MENU") &&
+                            pokemon.currentHp > 0 && pokemon.currentHp < pokemon.maxHp);
+                    },
+                    healPokemon: (amount) => {
+                        const game = this.hud && this.hud.game;
+                        const partyService = game && game.pokemonPartyService;
+                        if (!partyService || typeof partyService.healActivePokemon !== "function") {
+                            return {
+                                success: false,
+                                reason: "PARTY_SERVICE_UNAVAILABLE",
+                                message: "Không tìm thấy hệ thống Pokémon Party để hồi phục."
+                            };
+                        }
+                        return partyService.healActivePokemon(amount);
                     },
                     openMap: () => {
                         this.modalManager.openModal("map");
                     }
                 };
 
-                const result = this.inventoryService.useItem(this.selectedItemId, targetContext);
+                const result = await this.inventoryService.useItem(this.selectedItemId, targetContext);
 
                 if (result.success) {
                     this.modalManager.showToast(result.message);
+                    this.refreshUI();
                 } else {
                     this.modalManager.showToast(result.message, 3000);
                 }

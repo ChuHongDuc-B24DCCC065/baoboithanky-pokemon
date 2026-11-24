@@ -1,0 +1,1226 @@
+[
+  {
+    "id": "001",
+    "nationalDex": 1,
+    "name": "Bulbasaur",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 0.7,
+    "weightKg": 6.9,
+    "baseStats": {
+      "hp": 45,
+      "attack": 49,
+      "defense": 49,
+      "speed": 45,
+      "special": 65
+    },
+    "dexEntry": "Bulbasaur is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/001.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "002",
+    "nationalDex": 2,
+    "name": "Ivysaur",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 1,
+    "weightKg": 13,
+    "baseStats": {
+      "hp": 60,
+      "attack": 62,
+      "defense": 63,
+      "speed": 60,
+      "special": 80
+    },
+    "dexEntry": "Ivysaur is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/002.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "003",
+    "nationalDex": 3,
+    "name": "Venusaur",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 2,
+    "weightKg": 100,
+    "baseStats": {
+      "hp": 80,
+      "attack": 82,
+      "defense": 83,
+      "speed": 80,
+      "special": 100
+    },
+    "dexEntry": "Venusaur is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/003.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "004",
+    "nationalDex": 4,
+    "name": "Charmander",
+    "generation": 1,
+    "types": [
+      "FIRE"
+    ],
+    "heightM": 0.6,
+    "weightKg": 8.5,
+    "baseStats": {
+      "hp": 39,
+      "attack": 52,
+      "defense": 43,
+      "speed": 65,
+      "special": 50
+    },
+    "dexEntry": "Charmander is a Generation 1 Pokémon of type fire, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/004.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "005",
+    "nationalDex": 5,
+    "name": "Charmeleon",
+    "generation": 1,
+    "types": [
+      "FIRE"
+    ],
+    "heightM": 1.1,
+    "weightKg": 19,
+    "baseStats": {
+      "hp": 58,
+      "attack": 64,
+      "defense": 58,
+      "speed": 80,
+      "special": 65
+    },
+    "dexEntry": "Charmeleon is a Generation 1 Pokémon of type fire, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/005.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "006",
+    "nationalDex": 6,
+    "name": "Charizard",
+    "generation": 1,
+    "types": [
+      "FIRE",
+      "FLYING"
+    ],
+    "heightM": 1.7,
+    "weightKg": 90.5,
+    "baseStats": {
+      "hp": 78,
+      "attack": 84,
+      "defense": 78,
+      "speed": 100,
+      "special": 85
+    },
+    "dexEntry": "Charizard is a Generation 1 Pokémon of type fire, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/006.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "007",
+    "nationalDex": 7,
+    "name": "Squirtle",
+    "generation": 1,
+    "types": [
+      "WATER"
+    ],
+    "heightM": 0.5,
+    "weightKg": 9,
+    "baseStats": {
+      "hp": 44,
+      "attack": 48,
+      "defense": 65,
+      "speed": 43,
+      "special": 50
+    },
+    "dexEntry": "Squirtle is a Generation 1 Pokémon of type water, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/007.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "008",
+    "nationalDex": 8,
+    "name": "Wartortle",
+    "generation": 1,
+    "types": [
+      "WATER"
+    ],
+    "heightM": 1,
+    "weightKg": 22.5,
+    "baseStats": {
+      "hp": 59,
+      "attack": 63,
+      "defense": 80,
+      "speed": 58,
+      "special": 65
+    },
+    "dexEntry": "Wartortle is a Generation 1 Pokémon of type water, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/008.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "009",
+    "nationalDex": 9,
+    "name": "Blastoise",
+    "generation": 1,
+    "types": [
+      "WATER"
+    ],
+    "heightM": 1.6,
+    "weightKg": 85.5,
+    "baseStats": {
+      "hp": 79,
+      "attack": 83,
+      "defense": 100,
+      "speed": 78,
+      "special": 85
+    },
+    "dexEntry": "Blastoise is a Generation 1 Pokémon of type water, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/009.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "010",
+    "nationalDex": 10,
+    "name": "Caterpie",
+    "generation": 1,
+    "types": [
+      "BUG"
+    ],
+    "heightM": 0.3,
+    "weightKg": 2.9,
+    "baseStats": {
+      "hp": 45,
+      "attack": 30,
+      "defense": 35,
+      "speed": 45,
+      "special": 20
+    },
+    "dexEntry": "Caterpie is a Generation 1 Pokémon of type bug, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/010.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "011",
+    "nationalDex": 11,
+    "name": "Metapod",
+    "generation": 1,
+    "types": [
+      "BUG"
+    ],
+    "heightM": 0.7,
+    "weightKg": 9.9,
+    "baseStats": {
+      "hp": 50,
+      "attack": 20,
+      "defense": 55,
+      "speed": 30,
+      "special": 25
+    },
+    "dexEntry": "Metapod is a Generation 1 Pokémon of type bug, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/011.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "012",
+    "nationalDex": 12,
+    "name": "Butterfree",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "FLYING"
+    ],
+    "heightM": 1.1,
+    "weightKg": 32,
+    "baseStats": {
+      "hp": 60,
+      "attack": 45,
+      "defense": 50,
+      "speed": 70,
+      "special": 80
+    },
+    "dexEntry": "Butterfree is a Generation 1 Pokémon of type bug, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/012.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "013",
+    "nationalDex": 13,
+    "name": "Weedle",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "POISON"
+    ],
+    "heightM": 0.3,
+    "weightKg": 3.2,
+    "baseStats": {
+      "hp": 40,
+      "attack": 35,
+      "defense": 30,
+      "speed": 50,
+      "special": 20
+    },
+    "dexEntry": "Weedle is a Generation 1 Pokémon of type bug, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/013.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "014",
+    "nationalDex": 14,
+    "name": "Kakuna",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "POISON"
+    ],
+    "heightM": 0.6,
+    "weightKg": 10,
+    "baseStats": {
+      "hp": 45,
+      "attack": 25,
+      "defense": 50,
+      "speed": 35,
+      "special": 25
+    },
+    "dexEntry": "Kakuna is a Generation 1 Pokémon of type bug, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/014.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "015",
+    "nationalDex": 15,
+    "name": "Beedrill",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "POISON"
+    ],
+    "heightM": 1,
+    "weightKg": 29.5,
+    "baseStats": {
+      "hp": 65,
+      "attack": 80,
+      "defense": 40,
+      "speed": 75,
+      "special": 45
+    },
+    "dexEntry": "Beedrill is a Generation 1 Pokémon of type bug, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/015.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "016",
+    "nationalDex": 16,
+    "name": "Pidgey",
+    "generation": 1,
+    "types": [
+      "NORMAL",
+      "FLYING"
+    ],
+    "heightM": 0.3,
+    "weightKg": 1.8,
+    "baseStats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 40,
+      "speed": 56,
+      "special": 35
+    },
+    "dexEntry": "Pidgey is a Generation 1 Pokémon of type normal, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/016.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "017",
+    "nationalDex": 17,
+    "name": "Pidgeotto",
+    "generation": 1,
+    "types": [
+      "NORMAL",
+      "FLYING"
+    ],
+    "heightM": 1.1,
+    "weightKg": 30,
+    "baseStats": {
+      "hp": 63,
+      "attack": 60,
+      "defense": 55,
+      "speed": 71,
+      "special": 50
+    },
+    "dexEntry": "Pidgeotto is a Generation 1 Pokémon of type normal, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/017.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "018",
+    "nationalDex": 18,
+    "name": "Pidgeot",
+    "generation": 1,
+    "types": [
+      "NORMAL",
+      "FLYING"
+    ],
+    "heightM": 1.5,
+    "weightKg": 39.5,
+    "baseStats": {
+      "hp": 83,
+      "attack": 80,
+      "defense": 75,
+      "speed": 91,
+      "special": 70
+    },
+    "dexEntry": "Pidgeot is a Generation 1 Pokémon of type normal, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/018.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "019",
+    "nationalDex": 19,
+    "name": "Rattata",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 0.3,
+    "weightKg": 3.5,
+    "baseStats": {
+      "hp": 30,
+      "attack": 56,
+      "defense": 35,
+      "speed": 72,
+      "special": 25
+    },
+    "dexEntry": "Rattata is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/019.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "020",
+    "nationalDex": 20,
+    "name": "Raticate",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 0.7,
+    "weightKg": 18.5,
+    "baseStats": {
+      "hp": 55,
+      "attack": 81,
+      "defense": 60,
+      "speed": 97,
+      "special": 50
+    },
+    "dexEntry": "Raticate is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/020.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "021",
+    "nationalDex": 21,
+    "name": "Spearow",
+    "generation": 1,
+    "types": [
+      "NORMAL",
+      "FLYING"
+    ],
+    "heightM": 0.3,
+    "weightKg": 2,
+    "baseStats": {
+      "hp": 40,
+      "attack": 60,
+      "defense": 30,
+      "speed": 70,
+      "special": 31
+    },
+    "dexEntry": "Spearow is a Generation 1 Pokémon of type normal, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/021.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "022",
+    "nationalDex": 22,
+    "name": "Fearow",
+    "generation": 1,
+    "types": [
+      "NORMAL",
+      "FLYING"
+    ],
+    "heightM": 1.2,
+    "weightKg": 38,
+    "baseStats": {
+      "hp": 65,
+      "attack": 90,
+      "defense": 65,
+      "speed": 100,
+      "special": 61
+    },
+    "dexEntry": "Fearow is a Generation 1 Pokémon of type normal, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/022.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "023",
+    "nationalDex": 23,
+    "name": "Ekans",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 2,
+    "weightKg": 6.9,
+    "baseStats": {
+      "hp": 35,
+      "attack": 60,
+      "defense": 44,
+      "speed": 55,
+      "special": 40
+    },
+    "dexEntry": "Ekans is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/023.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "024",
+    "nationalDex": 24,
+    "name": "Arbok",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 3.5,
+    "weightKg": 65,
+    "baseStats": {
+      "hp": 60,
+      "attack": 85,
+      "defense": 69,
+      "speed": 80,
+      "special": 65
+    },
+    "dexEntry": "Arbok is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/024.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "025",
+    "nationalDex": 25,
+    "name": "Pikachu",
+    "generation": 1,
+    "types": [
+      "ELECTRIC"
+    ],
+    "heightM": 0.4,
+    "weightKg": 6,
+    "baseStats": {
+      "hp": 35,
+      "attack": 55,
+      "defense": 30,
+      "speed": 90,
+      "special": 50
+    },
+    "dexEntry": "Pikachu is a Generation 1 Pokémon of type electric, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/025.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "026",
+    "nationalDex": 26,
+    "name": "Raichu",
+    "generation": 1,
+    "types": [
+      "ELECTRIC"
+    ],
+    "heightM": 0.8,
+    "weightKg": 30,
+    "baseStats": {
+      "hp": 60,
+      "attack": 90,
+      "defense": 55,
+      "speed": 100,
+      "special": 90
+    },
+    "dexEntry": "Raichu is a Generation 1 Pokémon of type electric, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/026.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "027",
+    "nationalDex": 27,
+    "name": "Sandshrew",
+    "generation": 1,
+    "types": [
+      "GROUND"
+    ],
+    "heightM": 0.6,
+    "weightKg": 12,
+    "baseStats": {
+      "hp": 50,
+      "attack": 75,
+      "defense": 85,
+      "speed": 40,
+      "special": 30
+    },
+    "dexEntry": "Sandshrew is a Generation 1 Pokémon of type ground, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/027.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "028",
+    "nationalDex": 28,
+    "name": "Sandslash",
+    "generation": 1,
+    "types": [
+      "GROUND"
+    ],
+    "heightM": 1,
+    "weightKg": 29.5,
+    "baseStats": {
+      "hp": 75,
+      "attack": 100,
+      "defense": 110,
+      "speed": 65,
+      "special": 55
+    },
+    "dexEntry": "Sandslash is a Generation 1 Pokémon of type ground, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/028.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "029",
+    "nationalDex": 29,
+    "name": "Nidoran",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 0.4,
+    "weightKg": 7,
+    "baseStats": {
+      "hp": 55,
+      "attack": 47,
+      "defense": 52,
+      "speed": 41,
+      "special": 40
+    },
+    "dexEntry": "Nidoran is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/029.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "030",
+    "nationalDex": 30,
+    "name": "Nidorina",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 0.8,
+    "weightKg": 20,
+    "baseStats": {
+      "hp": 70,
+      "attack": 62,
+      "defense": 67,
+      "speed": 56,
+      "special": 55
+    },
+    "dexEntry": "Nidorina is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/030.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "031",
+    "nationalDex": 31,
+    "name": "Nidoqueen",
+    "generation": 1,
+    "types": [
+      "POISON",
+      "GROUND"
+    ],
+    "heightM": 1.3,
+    "weightKg": 60,
+    "baseStats": {
+      "hp": 90,
+      "attack": 82,
+      "defense": 87,
+      "speed": 76,
+      "special": 75
+    },
+    "dexEntry": "Nidoqueen is a Generation 1 Pokémon of type poison, ground.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/031.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "032",
+    "nationalDex": 32,
+    "name": "Nidoran",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 0.5,
+    "weightKg": 9,
+    "baseStats": {
+      "hp": 46,
+      "attack": 57,
+      "defense": 40,
+      "speed": 50,
+      "special": 40
+    },
+    "dexEntry": "Nidoran is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/032.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "033",
+    "nationalDex": 33,
+    "name": "Nidorino",
+    "generation": 1,
+    "types": [
+      "POISON"
+    ],
+    "heightM": 0.9,
+    "weightKg": 19.5,
+    "baseStats": {
+      "hp": 61,
+      "attack": 72,
+      "defense": 57,
+      "speed": 65,
+      "special": 55
+    },
+    "dexEntry": "Nidorino is a Generation 1 Pokémon of type poison, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/033.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "034",
+    "nationalDex": 34,
+    "name": "Nidoking",
+    "generation": 1,
+    "types": [
+      "POISON",
+      "GROUND"
+    ],
+    "heightM": 1.4,
+    "weightKg": 62,
+    "baseStats": {
+      "hp": 81,
+      "attack": 92,
+      "defense": 77,
+      "speed": 85,
+      "special": 75
+    },
+    "dexEntry": "Nidoking is a Generation 1 Pokémon of type poison, ground.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/034.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "035",
+    "nationalDex": 35,
+    "name": "Clefairy",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 0.6,
+    "weightKg": 7.5,
+    "baseStats": {
+      "hp": 70,
+      "attack": 45,
+      "defense": 48,
+      "speed": 35,
+      "special": 60
+    },
+    "dexEntry": "Clefairy is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/035.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "036",
+    "nationalDex": 36,
+    "name": "Clefable",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 1.3,
+    "weightKg": 40,
+    "baseStats": {
+      "hp": 95,
+      "attack": 70,
+      "defense": 73,
+      "speed": 60,
+      "special": 85
+    },
+    "dexEntry": "Clefable is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/036.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "037",
+    "nationalDex": 37,
+    "name": "Vulpix",
+    "generation": 1,
+    "types": [
+      "FIRE"
+    ],
+    "heightM": 0.6,
+    "weightKg": 9.9,
+    "baseStats": {
+      "hp": 38,
+      "attack": 41,
+      "defense": 40,
+      "speed": 65,
+      "special": 65
+    },
+    "dexEntry": "Vulpix is a Generation 1 Pokémon of type fire, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/037.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "038",
+    "nationalDex": 38,
+    "name": "Ninetales",
+    "generation": 1,
+    "types": [
+      "FIRE"
+    ],
+    "heightM": 1.1,
+    "weightKg": 19.9,
+    "baseStats": {
+      "hp": 73,
+      "attack": 76,
+      "defense": 75,
+      "speed": 100,
+      "special": 100
+    },
+    "dexEntry": "Ninetales is a Generation 1 Pokémon of type fire, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/038.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "039",
+    "nationalDex": 39,
+    "name": "Jigglypuff",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 0.5,
+    "weightKg": 5.5,
+    "baseStats": {
+      "hp": 115,
+      "attack": 45,
+      "defense": 20,
+      "speed": 20,
+      "special": 25
+    },
+    "dexEntry": "Jigglypuff is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/039.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "040",
+    "nationalDex": 40,
+    "name": "Wigglytuff",
+    "generation": 1,
+    "types": [
+      "NORMAL"
+    ],
+    "heightM": 1,
+    "weightKg": 12,
+    "baseStats": {
+      "hp": 140,
+      "attack": 70,
+      "defense": 45,
+      "speed": 45,
+      "special": 50
+    },
+    "dexEntry": "Wigglytuff is a Generation 1 Pokémon of type normal, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/040.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "041",
+    "nationalDex": 41,
+    "name": "Zubat",
+    "generation": 1,
+    "types": [
+      "POISON",
+      "FLYING"
+    ],
+    "heightM": 0.8,
+    "weightKg": 7.5,
+    "baseStats": {
+      "hp": 40,
+      "attack": 45,
+      "defense": 35,
+      "speed": 55,
+      "special": 40
+    },
+    "dexEntry": "Zubat is a Generation 1 Pokémon of type poison, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/041.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "042",
+    "nationalDex": 42,
+    "name": "Golbat",
+    "generation": 1,
+    "types": [
+      "POISON",
+      "FLYING"
+    ],
+    "heightM": 1.6,
+    "weightKg": 55,
+    "baseStats": {
+      "hp": 75,
+      "attack": 80,
+      "defense": 70,
+      "speed": 90,
+      "special": 75
+    },
+    "dexEntry": "Golbat is a Generation 1 Pokémon of type poison, flying.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/042.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "043",
+    "nationalDex": 43,
+    "name": "Oddish",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 0.5,
+    "weightKg": 5.4,
+    "baseStats": {
+      "hp": 45,
+      "attack": 50,
+      "defense": 55,
+      "speed": 30,
+      "special": 75
+    },
+    "dexEntry": "Oddish is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/043.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "044",
+    "nationalDex": 44,
+    "name": "Gloom",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 0.8,
+    "weightKg": 8.6,
+    "baseStats": {
+      "hp": 60,
+      "attack": 65,
+      "defense": 70,
+      "speed": 40,
+      "special": 85
+    },
+    "dexEntry": "Gloom is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/044.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "045",
+    "nationalDex": 45,
+    "name": "Vileplume",
+    "generation": 1,
+    "types": [
+      "GRASS",
+      "POISON"
+    ],
+    "heightM": 1.2,
+    "weightKg": 18.6,
+    "baseStats": {
+      "hp": 75,
+      "attack": 80,
+      "defense": 85,
+      "speed": 50,
+      "special": 100
+    },
+    "dexEntry": "Vileplume is a Generation 1 Pokémon of type grass, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/045.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "046",
+    "nationalDex": 46,
+    "name": "Paras",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "GRASS"
+    ],
+    "heightM": 0.3,
+    "weightKg": 5.4,
+    "baseStats": {
+      "hp": 35,
+      "attack": 70,
+      "defense": 55,
+      "speed": 25,
+      "special": 55
+    },
+    "dexEntry": "Paras is a Generation 1 Pokémon of type bug, grass.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/046.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "047",
+    "nationalDex": 47,
+    "name": "Parasect",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "GRASS"
+    ],
+    "heightM": 1,
+    "weightKg": 29.5,
+    "baseStats": {
+      "hp": 60,
+      "attack": 95,
+      "defense": 80,
+      "speed": 30,
+      "special": 80
+    },
+    "dexEntry": "Parasect is a Generation 1 Pokémon of type bug, grass.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/047.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "048",
+    "nationalDex": 48,
+    "name": "Venonat",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "POISON"
+    ],
+    "heightM": 1,
+    "weightKg": 30,
+    "baseStats": {
+      "hp": 60,
+      "attack": 55,
+      "defense": 50,
+      "speed": 45,
+      "special": 40
+    },
+    "dexEntry": "Venonat is a Generation 1 Pokémon of type bug, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/048.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "049",
+    "nationalDex": 49,
+    "name": "Venomoth",
+    "generation": 1,
+    "types": [
+      "BUG",
+      "POISON"
+    ],
+    "heightM": 1.5,
+    "weightKg": 12.5,
+    "baseStats": {
+      "hp": 70,
+      "attack": 65,
+      "defense": 60,
+      "speed": 90,
+      "special": 90
+    },
+    "dexEntry": "Venomoth is a Generation 1 Pokémon of type bug, poison.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/049.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  },
+  {
+    "id": "050",
+    "nationalDex": 50,
+    "name": "Diglett",
+    "generation": 1,
+    "types": [
+      "GROUND"
+    ],
+    "heightM": 0.2,
+    "weightKg": 0.8,
+    "baseStats": {
+      "hp": 10,
+      "attack": 55,
+      "defense": 25,
+      "speed": 95,
+      "special": 45
+    },
+    "dexEntry": "Diglett is a Generation 1 Pokémon of type ground, None.",
+    "assets": {
+      "front": "/res/pokemon/sprites/animated/050.gif",
+      "silhouette": null,
+      "icon": null
+    }
+  }
+]

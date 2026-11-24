@@ -40,6 +40,12 @@
         const posX = this.game.player ? this.game.player.position.x : (saved.x || 1);
         const posY = this.game.player ? this.game.player.position.y : (saved.y || 1);
         const facing = this.game.player ? this.game.player.position.facing : (saved.facing || "down");
+        const characterLevel = Number.isInteger(saved.characterLevel) ? saved.characterLevel : 1;
+        const characterExp = Number.isFinite(saved.characterExp) ? saved.characterExp : 0;
+        const expToNextLevel = this.game.getCharacterExpToNextLevel
+            ? this.game.getCharacterExpToNextLevel(characterLevel) : characterLevel * 50;
+        const characterExpPercent = expToNextLevel > 0
+            ? Math.max(0, Math.min(100, (characterExp / expToNextLevel) * 100)) : 100;
 
         const equipment = this.inventoryService.getEquipment();
         const equipStats = this.inventoryService.calculateEquipmentStats();
@@ -89,7 +95,14 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; margin-top: 6px;">
                                 <div style="background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px;">
                                     <span style="color: #94a3b8;">Cấp độ:</span>
-                                    <strong style="color: #38d9a9; float: right;">Lv. 1</strong>
+                                    <strong style="color: #38d9a9; float: right;">Lv. ${characterLevel}</strong>
+                                </div>
+                                <div style="background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px;">
+                                    <span style="color: #94a3b8;">EXP:</span>
+                                    <strong style="color: #38d9a9; float: right;">${expToNextLevel > 0 ? `${characterExp}/${expToNextLevel}` : "MAX"}</strong>
+                                    <div style="height: 4px; background: rgba(255,255,255,0.15); margin-top: 6px; border-radius: 2px;">
+                                        <div style="height: 100%; width: ${characterExpPercent}%; background: #38d9a9; border-radius: 2px;"></div>
+                                    </div>
                                 </div>
                                 <div style="background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px;">
                                     <span style="color: #94a3b8;">Sinh lực (HP):</span>
@@ -105,7 +118,7 @@
                                 </div>
                             </div>
                             <div style="font-size: 9px; color: #94a3b8; margin-top: 4px; font-style: italic;">
-                                *Lưu ý kỹ thuật: Hiện tại Database chỉ lưu vị trí và danh tính. Các chỉ số chiến đấu và cấp độ đang ở giai đoạn Prototype client.
+                                *Cấp độ và EXP được lưu cục bộ theo tài khoản trên trình duyệt này.
                             </div>
                         </div>
 

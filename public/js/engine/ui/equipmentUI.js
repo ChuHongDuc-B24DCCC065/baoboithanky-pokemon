@@ -181,9 +181,12 @@
             `;
             const unequipBtn = currentBox.querySelector("#rpg-btn-unequip");
             if (unequipBtn) {
-                unequipBtn.addEventListener("click", () => {
-                    const result = this.inventoryService.unequipItem(slot);
+                unequipBtn.addEventListener("click", async () => {
+                    if (unequipBtn.disabled) return;
+                    unequipBtn.disabled = true;
+                    const result = await this.inventoryService.unequipItem(slot);
                     this.modalManager.showToast(result.message);
+                    if (!result.success) unequipBtn.disabled = false;
                 });
             }
         } else {
@@ -246,9 +249,12 @@
 
                 const btn = itemRow.querySelector("button");
                 if (btn && !isThisEquipped) {
-                    btn.addEventListener("click", () => {
-                        const result = this.inventoryService.equipItem(slot, item.id);
+                    btn.addEventListener("click", async () => {
+                        if (btn.disabled) return;
+                        btn.disabled = true;
+                        const result = await this.inventoryService.equipItem(slot, item.id);
                         this.modalManager.showToast(result.message);
+                        if (!result.success) btn.disabled = false;
                     });
                 }
 

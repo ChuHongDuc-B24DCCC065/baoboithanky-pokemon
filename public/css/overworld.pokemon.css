@@ -1,0 +1,21 @@
+/* Phase 1J-A: Pokémon đứng yên trên overworld.
+ * Ô là 16x16 (Game.prototype.tileSize). Sprite GIF được thu vào khung 24x24,
+ * căn giữa theo chiều ngang và căn đáy theo ô (cùng quy ước margin-top: -8px với .npc).
+ * z-index 5 = bằng .npc: nằm dưới #map-overlay (6, che tán cây) và .world-portal (7). */
+.overworld-pokemon {
+    position: absolute;
+    z-index: 5;
+    width: 24px;
+    height: 24px;
+    margin-left: -4px;
+    margin-top: -8px;
+    object-fit: contain;
+    object-position: center bottom;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}

@@ -88,6 +88,11 @@ Character.prototype.syncWalk = [
         if (this[0].isPlayer) {
             this[0].walkInProgress = false;
 
+            // Trigger player step completion hook (Wild Encounter check)
+            if (this[0].game && typeof this[0].game.onPlayerStep === "function") {
+                this[0].game.onPlayerStep(this[1]);
+            }
+
             // Lên lịch lưu vị trí lên Firestore sau khi bước đi hoàn chỉnh (Debounce 2s)
             if (this[0].game && typeof this[0].game.scheduleSavePosition === "function") {
                 this[0].game.scheduleSavePosition();
@@ -140,6 +145,9 @@ Character.prototype.execCollision = function (direction) {
 
     // Kiểm tra va chạm với NPC nếu người chơi đang di chuyển (NPC-02)
     if (this.game.getNpcAt && this.game.getNpcAt(position.x, position.y)) {
+        return 0;
+    }
+    if (this.game.getOverworldPokemonAt && this.game.getOverworldPokemonAt(position.x, position.y)) {
         return 0;
     }
 
